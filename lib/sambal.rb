@@ -1,3 +1,5 @@
+# coding: UTF-8
+
 require "sambal/version"
 require 'open3'
 require 'logger'
