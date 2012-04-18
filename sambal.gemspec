@@ -4,8 +4,8 @@ require File.expand_path('../lib/sambal/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["John Axel Eriksson"]
   gem.email         = ["john@insane.se"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{Ruby Samba Client}
+  gem.summary       = %q{Ruby Samba Client}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)
