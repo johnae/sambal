@@ -12,6 +12,8 @@ lib/bundler/man
 pkg
 rdoc
 spec/reports
+spec/sambashare
+spec/smb.conf
 test/tmp
 test/version_tmp
 tmp
