@@ -28,7 +28,7 @@ describe Sambal::Client do
   end
 
   let(:file_to_upload) do
-    t = Tempfile.new('vp6server-smbclient-spec')
+    t = Tempfile.new('sambal-smbclient-spec')
     File.open(t.path,'w') do |f|
       f << "Hello from specs"
     end
@@ -64,14 +64,14 @@ describe Sambal::Client do
   end
 
   it "should get files from an smb server" do
-    @sambal_client.get(testfile, "/tmp/vp6server_spec_testfile.txt").should == true
-    File.exists?("/tmp/vp6server_spec_testfile.txt").should == true
-    File.size("/tmp/vp6server_spec_testfile.txt").should == @sambal_client.ls[testfile][:size].to_i
+    @sambal_client.get(testfile, "/tmp/sambal_spec_testfile.txt").should == true
+    File.exists?("/tmp/sambal_spec_testfile.txt").should == true
+    File.size("/tmp/sambal_spec_testfile.txt").should == @sambal_client.ls[testfile][:size].to_i
   end
 
   it "should return false when getting a file from an smb server fails" do
-    @sambal_client.get("non_existant_file.txt", "/tmp/vp6server_spec_non_existant_file.txt").should == false
-    File.exists?("/tmp/vp6server_spec_non_existant_file.txt").should == false
+    @sambal_client.get("non_existant_file.txt", "/tmp/sambal_spec_non_existant_file.txt").should == false
+    File.exists?("/tmp/sambal_spec_non_existant_file.txt").should == false
   end
 
   it "should upload files to an smb server" do
