@@ -4,9 +4,9 @@ require File.expand_path('../lib/sambal/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["John Axel Eriksson"]
   gem.email         = ["john@insane.se"]
-  gem.description   = %q{Ruby Samba Client}
+  gem.description   = %q{Ruby Samba Client using the cmdline smbclient}
   gem.summary       = %q{Ruby Samba Client}
-  gem.homepage      = ""
+  gem.homepage      = "https://github.com/johnae/sambal"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
