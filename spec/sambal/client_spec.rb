@@ -64,48 +64,58 @@ describe Sambal::Client do
   end
 
   it "should get files from an smb server" do
-    @sambal_client.get(testfile, "/tmp/sambal_spec_testfile.txt").should == true
+    @sambal_client.get(testfile, "/tmp/sambal_spec_testfile.txt").should be_successful
     File.exists?("/tmp/sambal_spec_testfile.txt").should == true
     File.size("/tmp/sambal_spec_testfile.txt").should == @sambal_client.ls[testfile][:size].to_i
   end
 
-  it "should return false when getting a file from an smb server fails" do
-    @sambal_client.get("non_existant_file.txt", "/tmp/sambal_spec_non_existant_file.txt").should == false
+  it "should not be successful when getting a file from an smb server fails" do
+    result = @sambal_client.get("non_existant_file.txt", "/tmp/sambal_spec_non_existant_file.txt")
+    result.should_not be_successful
+    result.message.should match /^NT_.*$/
+    result.message.split("\n").should have(1).line
     File.exists?("/tmp/sambal_spec_non_existant_file.txt").should == false
   end
 
   it "should upload files to an smb server" do
     @sambal_client.ls.should_not have_key("uploaded_file.txt")
-    @sambal_client.put(file_to_upload.path, 'uploaded_file.txt')
+    @sambal_client.put(file_to_upload.path, 'uploaded_file.txt').should be_successful
     @sambal_client.ls.should have_key("uploaded_file.txt")
   end
 
   it "should upload content to an smb server" do
     @sambal_client.ls.should_not have_key("content_uploaded_file.txt")
-    @sambal_client.put_content("Content upload", 'content_uploaded_file.txt')
+    @sambal_client.put_content("Content upload", 'content_uploaded_file.txt').should be_successful
     @sambal_client.ls.should have_key("content_uploaded_file.txt")
   end
 
   it "should delete files on an smb server" do
-    @sambal_client.del(testfile).should == true
+    @sambal_client.del(testfile).should be_successful
     @sambal_client.ls.should_not have_key(testfile)
   end
 
-  it "should return false when deleting a file from an smb server fails" do
-    @sambal_client.del("non_existant_file.txt").should == false
+  it "should not be successful when deleting a file from an smb server fails" do
+    result = @sambal_client.del("non_existant_file.txt")
+    result.should_not be_successful
+    result.message.should match /^NT_.*$/
+    result.message.split("\n").should have(1).line
   end
 
   it "should switch directory on an smb server" do
-    @sambal_client.put_content("testing directories", 'dirtest.txt') ## a bit stupid, but now we can check that this isn't listed when we switch dirs
+    @sambal_client.put_content("testing directories", 'dirtest.txt').should be_successful ## a bit stupid, but now we can check that this isn't listed when we switch dirs
     @sambal_client.ls.should have_key('dirtest.txt')
-    @sambal_client.cd(test_directory)
+    @sambal_client.cd(test_directory).should be_successful
     @sambal_client.ls.should_not have_key('dirtest.txt')
-    @sambal_client.put_content("in #{test_directory}", 'intestdir.txt')
+    @sambal_client.put_content("in #{test_directory}", 'intestdir.txt').should be_successful
     @sambal_client.ls.should have_key('intestdir.txt')
-    @sambal_client.cd('..')
+    @sambal_client.cd('..').should be_successful
     @sambal_client.ls.should_not have_key('intestdir.txt')
     @sambal_client.ls.should have_key('dirtest.txt')
   end
 
+  it "should not be successful when command fails" do
+    result = @sambal_client.put("jhfahsf iasifasifh", "jsfijsf ijidjag")
+    result.should_not be_successful
+  end
 
 end

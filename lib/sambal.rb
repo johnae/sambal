@@ -11,6 +11,33 @@ require 'tempfile'
 
 module Sambal
 
+  class InternalError < RuntimeError; end
+
+  class Response
+
+    attr_reader :message
+
+    def initialize(message, success)
+      msg = message.split("\n")
+      msg.each do |line|
+        if line =~ /^NT\_.*\s/
+          @message = line
+        end
+      end
+      @message ||= message
+      @success = success
+    end
+
+    def success?
+      @success
+    end
+
+    def failure?
+      !success?
+    end
+
+  end
+
   class Client
     
     attr_reader :connected
@@ -49,29 +76,33 @@ module Sambal
     end
   
     def cd(dir)
-      if ask "cd #{dir}"
-        return true
+      if response = ask("cd #{dir}")
+        Response.new(response, true)
       else
-        return false
+        Response.new(response, false)
       end
     end
   
     def get(file, output)
       response = ask "get #{file} #{output}"
       if response =~ /^getting\sfile.*$/
-        true
+        Response.new(response, true)
       else
-        false
+        Response.new(response, false)
       end
+    rescue InternalError => e
+      Response.new(e.message, false)
     end
   
     def put(file, destination)
       response = ask "put #{file} #{destination}"
       if response =~ /^putting\sfile.*$/
-        true
+        Response.new(response, true)
       else
-        false
+        Response.new(response, false)
       end
+    rescue InternalError => e
+      Response.new(e.message, false)
     end
   
     def put_content(content, destination)
@@ -81,10 +112,12 @@ module Sambal
       end
       response = ask "put #{t.path} #{destination}"
       if response =~ /^putting\sfile.*$/
-        true
+        Response.new(response, true)
       else
-        false
+        Response.new(response, false)
       end
+    rescue InternalError => e
+      Response.new(e.message, false)
     ensure
       t.close
     end
@@ -93,14 +126,16 @@ module Sambal
       response = ask "del #{file}"
       next_line = response.split("\n")[1]
       if next_line =~ /^smb:.*\\>/
-        true
-      elsif next_line =~ /^NT_STATUS_NO_SUCH_FILE.*$/
-        false
-      elsif next_line =~ /^NT_STATUS_ACCESS_DENIED.*$/
-        false
+        Response.new(response, true)
+      #elsif next_line =~ /^NT_STATUS_NO_SUCH_FILE.*$/
+      #  Response.new(response, false)
+      #elsif next_line =~ /^NT_STATUS_ACCESS_DENIED.*$/
+      #  Response.new(response, false)
       else
-        false
+        Response.new(response, false)
       end
+    rescue InternalError => e
+      Response.new(e.message, false)
     end
   
     def close
@@ -108,16 +143,14 @@ module Sambal
       @connected = false
     end
     
-    private
-    
     def ask(cmd)
       @i.printf("#{cmd}\n")
       response = @o.expect(/^smb:.*\\>/,10)[0] rescue nil
       if response.nil?
         $stderr.puts "Failed to do #{cmd}"
-        exit(1)
+        raise Exception.new, "Failed to do #{cmd}"
       else
-        return response
+        response
       end
     end
     

@@ -44,6 +44,12 @@ File.open(SAMBA_CONF, 'w') do |f|
   f << Document.new(IO.binread("#{spec_path}/smb.conf.erb")).interpolate(samba_share: SAMBA_SHARE, local_user: ENV['USER'])
 end
 
+RSpec::Matchers.define :be_successful do
+  match do |actual|
+    actual.success?.should be_true
+  end
+end
+
 #
 #
 
