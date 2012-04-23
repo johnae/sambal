@@ -6,13 +6,16 @@ require 'tempfile'
 describe Sambal::Client do
 
   before(:all) do
+    @sambal_client = described_class.new(host: test_server.host, share: test_server.share_name, port: test_server.port)
+  end
+
+  before(:each) do
     File.open("#{test_server.share_path}/#{testfile}", 'w') do |f|
       f << "Hello"
     end
     FileUtils.mkdir_p "#{test_server.share_path}/#{test_directory}"
     FileUtils.chmod 0775, "#{test_server.share_path}/#{test_directory}"
     FileUtils.chmod 0777, "#{test_server.share_path}/#{testfile}"
-    @sambal_client = described_class.new(host: test_server.host, share: test_server.share_name, port: test_server.port)
   end
 
   after(:all) do
@@ -87,6 +90,15 @@ describe Sambal::Client do
     @sambal_client.cd('..').should be_successful
     @sambal_client.ls.should_not have_key('intestdir.txt')
     @sambal_client.ls.should have_key('dirtest.txt')
+  end
+
+  it "should delete files in subdirectory while in a higher level directory" do
+    @sambal_client.cd('/')
+    @sambal_client.cd(test_directory)
+    @sambal_client.put_content("some content", "file_to_delete").should be_successful
+    @sambal_client.cd('/')
+    @sambal_client.del("#{test_directory}/file_to_delete").should be_successful
+    @sambal_client.ls.should have_key(testfile)
   end
 
   it "should not be successful when command fails" do

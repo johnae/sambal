@@ -123,6 +123,12 @@ module Sambal
     end
   
     def del(file)
+      if (path_parts = file.split('/')).length>1
+        file = path_parts.pop
+        subdirs = path_parts.length
+        dir = path_parts.join('/')
+        cd dir
+      end
       response = ask "del #{file}"
       next_line = response.split("\n")[1]
       if next_line =~ /^smb:.*\\>/
@@ -136,6 +142,10 @@ module Sambal
       end
     rescue InternalError => e
       Response.new(e.message, false)
+    ensure
+      unless subdirs.nil?
+        subdirs.times { cd '..' }
+      end
     end
   
     def close
