@@ -5,26 +5,18 @@ require 'tempfile'
 
 describe Sambal::Client do
 
-  SMB_PORT = 2321
-  SHARE_NAME = 'spec'
-
-  def smbd_pids
-    pids = `ps ax | grep smbd | grep #{SMB_PORT} | grep -v grep | awk '{print \$1}'`.chomp
-    pids.split("\n").map {|p| (p.nil? || p=='') ? nil : p.to_i }
-  end
-
-  def start_smbd
-    ## we just start an smb server here for the duration of this spec
-    @smb_server_pid = fork do
-      `smbd -S -F -s #{SAMBA_CONF} -p 2321`
+  before(:all) do
+    File.open("#{test_server.share_path}/#{testfile}", 'w') do |f|
+      f << "Hello"
     end
-    sleep 2 ## takes a short time to start up
+    FileUtils.mkdir_p "#{test_server.share_path}/#{test_directory}"
+    FileUtils.chmod 0775, "#{test_server.share_path}/#{test_directory}"
+    FileUtils.chmod 0777, "#{test_server.share_path}/#{testfile}"
+    @sambal_client = described_class.new(host: test_server.host, share: test_server.share_name, port: test_server.port)
   end
-  
-  def stop_smbd
-    ## stopping is done in an ugly way now by greping etc - it works
-    pids = smbd_pids
-    pids.each { |ppid| `kill -9 #{ppid} 2> /dev/null` }
+
+  after(:all) do
+    @sambal_client.close
   end
 
   let(:file_to_upload) do
@@ -41,22 +33,6 @@ describe Sambal::Client do
 
   let(:testfile) do
     'testfile.txt'
-  end
-
-  before(:all) do
-    File.open("#{SAMBA_SHARE}/#{testfile}", 'w') do |f|
-      f << "Hello"
-    end
-    FileUtils.mkdir_p "#{SAMBA_SHARE}/#{test_directory}"
-    FileUtils.chmod 0775, "#{SAMBA_SHARE}/#{test_directory}"
-    FileUtils.chmod 0777, "#{SAMBA_SHARE}/#{testfile}"
-    start_smbd
-    @sambal_client = described_class.new(host: '127.0.0.1', share: SHARE_NAME, port: SMB_PORT)
-  end
-
-  after(:all) do
-    @sambal_client.close
-    stop_smbd
   end
 
   it "should list files on an smb server" do
