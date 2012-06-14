@@ -14,8 +14,15 @@ describe Sambal::Client do
       f << "Hello"
     end
     FileUtils.mkdir_p "#{test_server.share_path}/#{test_directory}"
+    FileUtils.mkdir_p "#{test_server.share_path}/#{test_directory}/#{test_sub_directory}"
+    File.open("#{test_server.share_path}/#{test_directory}/#{test_sub_directory}/#{testfile_sub}", 'w') do |f|
+      f << "Hello"
+    end
+    FileUtils.chmod 0775, "#{test_server.share_path}/#{test_directory}/#{test_sub_directory}/#{testfile_sub}"
+    FileUtils.chmod 0775, "#{test_server.share_path}/#{test_directory}/#{test_sub_directory}"
     FileUtils.chmod 0775, "#{test_server.share_path}/#{test_directory}"
     FileUtils.chmod 0777, "#{test_server.share_path}/#{testfile}"
+    @sambal_client.cd('/')
   end
 
   after(:all) do
@@ -34,8 +41,24 @@ describe Sambal::Client do
     'testdir'
   end
 
+  let(:test_sub_directory) do
+    'testdir_sub'
+  end
+
+  let(:sub_directory_path) do
+    "#{test_directory}/#{test_sub_directory}"
+  end
+
   let(:testfile) do
     'testfile.txt'
+  end
+
+  let(:testfile_sub) do
+    'testfile_sub.txt'
+  end
+
+  let(:testfile_sub_path) do
+    "#{sub_directory_path}/#{testfile_sub}"
   end
 
   it "should list files on an smb server" do
@@ -46,6 +69,13 @@ describe Sambal::Client do
     @sambal_client.get(testfile, "/tmp/sambal_spec_testfile.txt").should be_successful
     File.exists?("/tmp/sambal_spec_testfile.txt").should == true
     File.size("/tmp/sambal_spec_testfile.txt").should == @sambal_client.ls[testfile][:size].to_i
+  end
+
+  it "should get files in a subdirectory while in a higher level directory from an smb server" do
+    @sambal_client.get(testfile_sub_path, "/tmp/sambal_spec_testfile_sub.txt").should be_successful
+    File.exists?("/tmp/sambal_spec_testfile_sub.txt").should == true
+    @sambal_client.cd(sub_directory_path)
+    File.size("/tmp/sambal_spec_testfile_sub.txt").should == @sambal_client.ls[testfile_sub][:size].to_i
   end
 
   it "should not be successful when getting a file from an smb server fails" do
@@ -98,7 +128,8 @@ describe Sambal::Client do
     @sambal_client.put_content("some content", "file_to_delete").should be_successful
     @sambal_client.cd('/')
     @sambal_client.del("#{test_directory}/file_to_delete").should be_successful
-    @sambal_client.ls.should have_key(testfile)
+    @sambal_client.cd('/')
+    @sambal_client.ls.should have_key("#{testfile}")
   end
 
   it "should not be successful when command fails" do

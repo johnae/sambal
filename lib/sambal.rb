@@ -70,6 +70,24 @@ module Sambal
         raise RuntimeError.exception("Unknown Process Failed!! (#{$!.to_s})")
       end
     end
+
+    def file_context(path)
+      if (path_parts = path.split('/')).length>1
+        file = path_parts.pop
+        subdirs = path_parts.length
+        dir = path_parts.join('/')
+        cd dir
+      else
+        file = path
+      end
+      begin
+        yield(file)
+      ensure
+        unless subdirs.nil?
+          subdirs.times { cd '..' }
+        end
+      end
+    end
     
     def ls
       parse_files(ask("ls"))
@@ -84,14 +102,18 @@ module Sambal
     end
   
     def get(file, output)
-      response = ask "get #{file} #{output}"
-      if response =~ /^getting\sfile.*$/
-        Response.new(response, true)
-      else
-        Response.new(response, false)
+      begin
+        file_context(file) do |file|
+          response = ask "get #{file} #{output}"
+          if response =~ /^getting\sfile.*$/
+            Response.new(response, true)
+          else
+            Response.new(response, false)
+          end
+        end
+      rescue InternalError => e
+        Response.new(e.message, false)
       end
-    rescue InternalError => e
-      Response.new(e.message, false)
     end
   
     def put(file, destination)
@@ -123,29 +145,47 @@ module Sambal
     end
   
     def del(file)
-      if (path_parts = file.split('/')).length>1
-        file = path_parts.pop
-        subdirs = path_parts.length
-        dir = path_parts.join('/')
-        cd dir
+      begin
+        file_context(file) do |file|
+          response = ask "del #{file}"
+          next_line = response.split("\n")[1]
+          if next_line =~ /^smb:.*\\>/
+          Response.new(response, true)
+          #elsif next_line =~ /^NT_STATUS_NO_SUCH_FILE.*$/
+          #  Response.new(response, false)
+          #elsif next_line =~ /^NT_STATUS_ACCESS_DENIED.*$/
+          #  Response.new(response, false)
+          else
+            Response.new(response, false)
+          end
+        end
+      rescue InternalError => e
+        Response.new(e.message, false)
       end
-      response = ask "del #{file}"
-      next_line = response.split("\n")[1]
-      if next_line =~ /^smb:.*\\>/
-        Response.new(response, true)
-      #elsif next_line =~ /^NT_STATUS_NO_SUCH_FILE.*$/
-      #  Response.new(response, false)
-      #elsif next_line =~ /^NT_STATUS_ACCESS_DENIED.*$/
-      #  Response.new(response, false)
-      else
-        Response.new(response, false)
-      end
-    rescue InternalError => e
-      Response.new(e.message, false)
-    ensure
-      unless subdirs.nil?
-        subdirs.times { cd '..' }
-      end
+      #end
+      #if (path_parts = file.split('/')).length>1
+      #  file = path_parts.pop
+      #  subdirs = path_parts.length
+      #  dir = path_parts.join('/')
+      #  cd dir
+      #end
+    #  response = ask "del #{file}"
+    #  next_line = response.split("\n")[1]
+    #  if next_line =~ /^smb:.*\\>/
+    #    Response.new(response, true)
+    #  #elsif next_line =~ /^NT_STATUS_NO_SUCH_FILE.*$/
+    #  #  Response.new(response, false)
+    #  #elsif next_line =~ /^NT_STATUS_ACCESS_DENIED.*$/
+    #  #  Response.new(response, false)
+    #  else
+    #    Response.new(response, false)
+    #  end
+    #rescue InternalError => e
+    #  Response.new(e.message, false)
+    #ensure
+    #  unless subdirs.nil?
+    #    subdirs.times { cd '..' }
+    #  end
     end
   
     def close
