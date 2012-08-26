@@ -53,6 +53,14 @@ describe Sambal::Client do
     'testfile.txt'
   end
 
+  let(:testfile2) do
+    'testfile.tx'
+  end
+
+  let(:testfile3) do
+    'testfil.txt'
+  end
+
   let(:testfile_sub) do
     'testfile_sub.txt'
   end
@@ -61,8 +69,25 @@ describe Sambal::Client do
     "#{sub_directory_path}/#{testfile_sub}"
   end
 
-  it "should list files on an smb server" do
-    @sambal_client.ls.should have_key(testfile)
+  describe 'ls' do
+    before(:all) do
+      FileUtils.cp "#{test_server.share_path}/#{testfile}", "#{test_server.share_path}/#{testfile2}"
+      FileUtils.cp "#{test_server.share_path}/#{testfile}", "#{test_server.share_path}/#{testfile3}"
+    end
+ 
+    it "should list files on an smb server" do
+      result = @sambal_client.ls
+      result.should have_key(testfile)
+      result.should have_key(testfile2)
+      result.should have_key(testfile3)
+    end
+
+    it "should list files using a wildcard on an smb server" do
+      result = @sambal_client.ls '*.txt'
+      result.should have_key(testfile)
+      result.should_not have_key(testfile2)
+      result.should have_key(testfile3)
+    end
   end
 
   it "should get files from an smb server" do

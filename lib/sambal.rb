@@ -89,8 +89,8 @@ module Sambal
       end
     end
     
-    def ls
-      parse_files(ask("ls"))
+    def ls(wildcard = '')
+      parse_files(ask("ls #{wildcard}"))
     end
   
     def cd(dir)
