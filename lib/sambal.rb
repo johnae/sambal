@@ -89,8 +89,8 @@ module Sambal
       end
     end
     
-    def ls(wildcard = '')
-      parse_files(ask("ls #{wildcard}"))
+    def ls(qualifier = '*')
+      parse_files(ask_wrapped('ls', qualifier))
     end
   
     def cd(dir)
@@ -104,7 +104,7 @@ module Sambal
     def get(file, output)
       begin
         file_context(file) do |file|
-          response = ask "get #{file} #{output}"
+          response = ask_wrapped 'get', [file, output]
           if response =~ /^getting\sfile.*$/
             Response.new(response, true)
           else
@@ -117,7 +117,7 @@ module Sambal
     end
   
     def put(file, destination)
-      response = ask "put #{file} #{destination}"
+      response = ask_wrapped 'put', [file, destination]
       if response =~ /^putting\sfile.*$/
         Response.new(response, true)
       else
@@ -132,7 +132,7 @@ module Sambal
       File.open(t.path, 'w') do |f|
         f << content
       end
-      response = ask "put #{t.path} #{destination}"
+      response = ask_wrapped 'put', [t.path, destination]
       if response =~ /^putting\sfile.*$/
         Response.new(response, true)
       else
@@ -147,7 +147,7 @@ module Sambal
     def del(file)
       begin
         file_context(file) do |file|
-          response = ask "del #{file}"
+          response = ask_wrapped 'del', file
           next_line = response.split("\n")[1]
           if next_line =~ /^smb:.*\\>/
           Response.new(response, true)
@@ -202,6 +202,16 @@ module Sambal
       else
         response
       end
+    end
+    
+    def ask_wrapped(cmd,filenames)
+      ask wrap_filenames(cmd,filenames)
+    end
+    
+    def wrap_filenames(cmd,filenames)
+      filenames = [filenames] unless filenames.kind_of?(Array)
+      filenames.map!{ |filename| '"' + filename + '"' }
+      [cmd,filenames].flatten.join(' ')
     end
     
     def parse_files(str)
