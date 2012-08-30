@@ -22,11 +22,13 @@ Or install it yourself as:
 
 A working installation of samba, specifically the "smbclient" command line utility. See http://www.samba.org for more information.
 On a mac this can be installed through homebrew https://github.com/mxcl/homebrew, like this:
+    
     brew install samba
 
 On the Mac it can probably also be installed both through Fink and MacPorts.
 
 On Linux (Ubuntu) it's as easy as:
+    
     apt-get install smbclient
 
 It should be available in a similar way on all major Linux distributions.
