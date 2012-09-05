@@ -48,8 +48,11 @@ module Sambal
         @o, @i, @pid = PTY.spawn("smbclient //#{options[:host]}/#{options[:share]} #{options[:password]} -W #{options[:domain]} -U #{options[:user]} -p #{options[:port]}")
         #@o.set_encoding('UTF-8:UTF-8') ## don't know didn't work, we only have this problem when the files are named using non-english characters
         #@i.set_encoding('UTF-8:UTF-8')
-        res = @o.expect(/^smb:.*\\>/, 10)[0]
+        res = @o.expect(/^smb:.*\\>/, 10)[0] rescue nil
         @connected = case res
+        when nil
+          $stderr.puts "Failed to connect"
+          false
         when /^put/
           res['putting'].nil? ? false : true
         else
@@ -66,8 +69,8 @@ module Sambal
           close if @pid
           exit(1)
         end
-      rescue
-        raise RuntimeError.exception("Unknown Process Failed!! (#{$!.to_s})")
+      rescue Exception => e
+        raise RuntimeError.exception("Unknown Process Failed!! (#{$!.to_s}): #{e.message.inspect}\n"+e.backtrace.join("\n"))
       end
     end
 
