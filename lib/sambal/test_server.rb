@@ -38,6 +38,8 @@ module Sambal
       @share_path = "#{root_path}/share"
       @share_name = share_name
       @config_path = "#{root_path}/smb.conf"
+      @lock_path = "#{root_path}"
+      @pid_dir = "#{root_path}"
       @port = Random.new(Time.now.to_i).rand(2345..5678).to_i
       @run_as = run_as
       FileUtils.mkdir_p @share_path
@@ -57,7 +59,7 @@ module Sambal
 
     def start
       @smb_server_pid = fork do
-        `smbd -S -F -s #{@config_path} -p #{@port}`
+        `smbd -S -F -s #{@config_path} -p #{@port} --lockdir=#{@lock_path} --piddir=#{@pid_dir}`
       end
       sleep 2 ## takes a short time to start up
     end
