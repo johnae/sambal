@@ -74,6 +74,14 @@ module Sambal
       end
     end
 
+    def logger
+      @logger ||= Logger.new(STDOUT)
+    end
+
+    def logger=(l)
+      @logger = l
+    end
+
     def file_context(path)
       if (path_parts = path.split('/')).length>1
         file = path_parts.pop
@@ -145,6 +153,30 @@ module Sambal
       Response.new(e.message, false)
     ensure
       t.close
+    end
+
+    def rmdir(dir)
+      cd dir
+      begin
+        ls.each do |name, meta|
+          if meta[:type]==:file
+            response = del name
+          elsif meta[:type]==:directory && !(name =~ /^\.+$/)
+            response = rmdir(name)
+          end
+          raise InternalError.new response.message if response && response.failure?
+        end
+        cd '..'
+        response = ask_wrapped 'rmdir', dir
+        next_line = response.split("\n")[1]
+        if next_line =~ /^smb:.*\\>/
+          Response.new(response, true)
+        else
+          Response.new(response, false)
+        end
+      rescue InternalError => e
+        Response.new(e.message, false)
+      end
     end
   
     def del(file)

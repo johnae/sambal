@@ -157,6 +157,21 @@ describe Sambal::Client do
     @sambal_client.ls.should have_key("#{testfile}")
   end
 
+  it "should recursively delete a directory" do
+    @sambal_client.cd('/')
+    @sambal_client.cd(test_directory)
+    @sambal_client.put_content("some content", "file_to_delete").should be_successful
+    @sambal_client.cd('/')
+    @sambal_client.rmdir("#{test_directory}").should be_successful
+    @sambal_client.cd('/')
+    @sambal_client.ls.should_not have_key("#{test_directory}")
+  end
+
+  it "should not be successful when recursively deleting a nonexistant directory" do
+    @sambal_client.cd('/')
+    @sambal_client.rmdir("this_doesnt_exist").should_not be_successful
+  end
+
   it "should not be successful when command fails" do
     result = @sambal_client.put("jhfahsf iasifasifh", "jsfijsf ijidjag")
     result.should_not be_successful
