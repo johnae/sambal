@@ -13,11 +13,16 @@ describe Sambal::Client do
     File.open("#{test_server.share_path}/#{testfile}", 'w') do |f|
       f << "Hello"
     end
+    FileUtils.mkdir_p "#{test_server.share_path}/#{test_directory_with_space_in_name}"
+    File.open("#{test_server.share_path}/#{test_directory_with_space_in_name}/#{test_file_in_directory_with_space_in_name}", 'w') do |f|
+      f << "Hello there"
+    end
     FileUtils.mkdir_p "#{test_server.share_path}/#{test_directory}"
     FileUtils.mkdir_p "#{test_server.share_path}/#{test_directory}/#{test_sub_directory}"
     File.open("#{test_server.share_path}/#{test_directory}/#{test_sub_directory}/#{testfile_sub}", 'w') do |f|
       f << "Hello"
     end
+    FileUtils.chmod 0775, "#{test_server.share_path}/#{test_directory_with_space_in_name}/#{test_file_in_directory_with_space_in_name}"
     FileUtils.chmod 0775, "#{test_server.share_path}/#{test_directory}/#{test_sub_directory}/#{testfile_sub}"
     FileUtils.chmod 0775, "#{test_server.share_path}/#{test_directory}/#{test_sub_directory}"
     FileUtils.chmod 0775, "#{test_server.share_path}/#{test_directory}"
@@ -36,6 +41,12 @@ describe Sambal::Client do
     end
     t
   end
+
+  let(:test_directory_with_space_in_name) { 'my dir with spaces in name' }
+
+  let(:test_file_in_directory_with_space_in_name) { 'a_file_in_a_dir_with_spaces_in_name' }
+
+  let(:test_spaces_in_name_path) { "#{test_directory_with_space_in_name}/#{test_file_in_directory_with_space_in_name}" }
 
   let(:test_directory) do
     'testdir'
@@ -74,7 +85,12 @@ describe Sambal::Client do
       FileUtils.cp "#{test_server.share_path}/#{testfile}", "#{test_server.share_path}/#{testfile2}"
       FileUtils.cp "#{test_server.share_path}/#{testfile}", "#{test_server.share_path}/#{testfile3}"
     end
- 
+
+    it "should list files with spaces in their names" do
+      result = @sambal_client.ls
+      result.should have_key(test_directory_with_space_in_name)
+    end
+
     it "should list files on an smb server" do
       result = @sambal_client.ls
       result.should have_key(testfile)
@@ -94,6 +110,13 @@ describe Sambal::Client do
     @sambal_client.get(testfile, "/tmp/sambal_spec_testfile.txt").should be_successful
     File.exists?("/tmp/sambal_spec_testfile.txt").should == true
     File.size("/tmp/sambal_spec_testfile.txt").should == @sambal_client.ls[testfile][:size].to_i
+  end
+
+  it "should get files in a dir with spaces in it's name from an smb server" do
+    @sambal_client.get(test_spaces_in_name_path, "/tmp/sambal_this_file_was_in_dir_with_spaces.txt").should be_successful
+    File.exists?("/tmp/sambal_this_file_was_in_dir_with_spaces.txt").should == true
+    @sambal_client.cd(test_directory_with_space_in_name)
+    File.size("/tmp/sambal_this_file_was_in_dir_with_spaces.txt").should == @sambal_client.ls[test_file_in_directory_with_space_in_name][:size].to_i
   end
 
   it "should get files in a subdirectory while in a higher level directory from an smb server" do
@@ -176,11 +199,11 @@ describe Sambal::Client do
     result = @sambal_client.put("jhfahsf iasifasifh", "jsfijsf ijidjag")
     result.should_not be_successful
   end
-  
+
   it 'should create commands with one wrapped filename' do
     @sambal_client.wrap_filenames('cmd',['file1','file2']).should eq('cmd "file1" "file2"')
   end
-  
+
   it 'should create commands with more than one wrapped filename' do
     @sambal_client.wrap_filenames('cmd',['file1','file2']).should eq('cmd "file1" "file2"')
   end

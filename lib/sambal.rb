@@ -39,9 +39,9 @@ module Sambal
   end
 
   class Client
-    
+
     attr_reader :connected
-    
+
     def initialize(options={})
       begin
         options = {domain: 'WORKGROUP', host: '127.0.0.1', share: '', user: 'guest', password: '--no-pass', port: 445}.merge(options)
@@ -64,7 +64,7 @@ module Sambal
             true
           end
         end
-        
+
         unless @connected
           close if @pid
           exit(1)
@@ -99,19 +99,20 @@ module Sambal
         end
       end
     end
-    
+
     def ls(qualifier = '*')
       parse_files(ask_wrapped('ls', qualifier))
     end
-  
+
     def cd(dir)
-      if response = ask("cd #{dir}")
-        Response.new(response, true)
-      else
+      response = ask("cd \"#{dir}\"")
+      if response.split("\r\n").join('') =~ /NT_STATUS_OBJECT_NAME_NOT_FOUND/
         Response.new(response, false)
+      else
+        Response.new(response, true)
       end
     end
-  
+
     def get(file, output)
       begin
         file_context(file) do |file|
@@ -126,7 +127,7 @@ module Sambal
         Response.new(e.message, false)
       end
     end
-  
+
     def put(file, destination)
       response = ask_wrapped 'put', [file, destination]
       if response =~ /^putting\sfile.*$/
@@ -137,7 +138,7 @@ module Sambal
     rescue InternalError => e
       Response.new(e.message, false)
     end
-  
+
     def put_content(content, destination)
       t = Tempfile.new("upload-smb-content-#{destination}")
       File.open(t.path, 'w') do |f|
@@ -156,7 +157,8 @@ module Sambal
     end
 
     def rmdir(dir)
-      cd dir
+      response = cd dir
+      return response if response.failure?
       begin
         ls.each do |name, meta|
           if meta[:type]==:file
@@ -178,7 +180,7 @@ module Sambal
         Response.new(e.message, false)
       end
     end
-  
+
     def del(file)
       begin
         file_context(file) do |file|
@@ -222,12 +224,12 @@ module Sambal
     #    subdirs.times { cd '..' }
     #  end
     end
-  
+
     def close
       @i.printf("quit\n")
       @connected = false
     end
-    
+
     def ask(cmd)
       @i.printf("#{cmd}\n")
       response = @o.expect(/^smb:.*\\>/,10)[0] rescue nil
@@ -238,22 +240,23 @@ module Sambal
         response
       end
     end
-    
+
     def ask_wrapped(cmd,filenames)
       ask wrap_filenames(cmd,filenames)
     end
-    
+
     def wrap_filenames(cmd,filenames)
       filenames = [filenames] unless filenames.kind_of?(Array)
       filenames.map!{ |filename| '"' + filename + '"' }
       [cmd,filenames].flatten.join(' ')
     end
-    
+
     def parse_files(str)
       files = {}
       str.each_line do |line|
         if line =~ /\s+([\w\.\d\-\_\?\!\s]+)\s+([DAH]?)\s+(\d+)\s+(.+)$/
-          lsplit = line.split(/\s+/)
+          lsplit = line.split(/\s{2,}/)
+          #$stderr.puts "lsplit: #{lsplit}"
           lsplit.shift ## remove first empty string
           name = lsplit.shift#$1
           if lsplit.first =~ /^[A-Za-z]+$/
@@ -273,6 +276,6 @@ module Sambal
       end
       files
     end
-    
+
   end
 end
