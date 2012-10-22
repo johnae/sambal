@@ -14,7 +14,7 @@ class Document
   def initialize(template)
     @template = ERB.new(template)
   end
-  
+
   def interpolate(replacements = {})
     @template.result(replacements.to_binding)
   end
@@ -45,7 +45,7 @@ module Sambal
       FileUtils.mkdir_p @share_path
       write_config
     end
-  
+
     def find_pids
       pids = `ps ax | grep smbd | grep #{@port} | grep -v grep | awk '{print \$1}'`.chomp
       pids.split("\n").map {|p| (p.nil? || p=='') ? nil : p.to_i }
@@ -58,8 +58,14 @@ module Sambal
     end
 
     def start
-      @smb_server_pid = fork do
-        `smbd -S -F -s #{@config_path} -p #{@port} --lockdir=#{@lock_path} --piddir=#{@pid_dir}`
+      if RUBY_PLATFORM=="java"
+        @smb_server_pid = Thread.new do
+          `smbd -S -F -s #{@config_path} -p #{@port} --lockdir=#{@lock_path} --piddir=#{@pid_dir}`
+        end
+      else
+        @smb_server_pid = fork do
+          `smbd -S -F -s #{@config_path} -p #{@port} --lockdir=#{@lock_path} --piddir=#{@pid_dir}`
+        end
       end
       sleep 2 ## takes a short time to start up
     end
