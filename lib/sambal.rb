@@ -227,6 +227,8 @@ module Sambal
 
     def close
       @i.printf("quit\n")
+      @i.close
+      @o.close
       @connected = false
     end
 
