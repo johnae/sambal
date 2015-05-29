@@ -40,7 +40,7 @@ It should be available in a similar way on all major Linux distributions.
     client.put("local_file.txt","remote_file.txt") # uploads file to server
     client.put_content("My content here", "remote_file") # uploads content to a file on server
     client.get("remote_file.txt", "local_file.txt") # downloads file from server
-    client.delete("remote_file.txt") # deletes files from server
+    client.del("remote_file.txt") # deletes files from server
     client.cd("some_directory") # changes directory on server
     client.close # closes connection
 
