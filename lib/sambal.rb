@@ -45,7 +45,7 @@ module Sambal
     def initialize(options={})
       begin
         options = {domain: 'WORKGROUP', host: '127.0.0.1', share: '', user: 'guest', password: '--no-pass', port: 445}.merge(options)
-        @o, @i, @pid = PTY.spawn("smbclient //#{options[:host]}/#{options[:share]} #{options[:password]} -W #{options[:domain]} -U #{options[:user]} -p #{options[:port]}")
+        @o, @i, @pid = PTY.spawn("smbclient \"//#{options[:host]}/#{options[:share]}\" \"#{options[:password]}\" -W \"#{options[:domain]}\" -U \"#{options[:user]}\" -p #{options[:port]}")
         #@o.set_encoding('UTF-8:UTF-8') ## don't know didn't work, we only have this problem when the files are named using non-english characters
         #@i.set_encoding('UTF-8:UTF-8')
         res = @o.expect(/(.*\n)?smb:.*\\>/, 10)[0] rescue nil
