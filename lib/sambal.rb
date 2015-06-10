@@ -226,9 +226,9 @@ module Sambal
     end
 
     def close
-      @i.printf("quit\n")
       @i.close
       @o.close
+      Process.wait(@pid)
       @connected = false
     end
 
