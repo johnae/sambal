@@ -34,7 +34,7 @@ RSpec.configure do |config|
   
   ## perhaps this should be removed as well
   ## and done in Rakefile?
-  config.color_enabled = true
+  config.color = true
   ## dont do this, do it in Rakefile instead
   #config.formatter = 'd'
 
