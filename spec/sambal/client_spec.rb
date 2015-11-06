@@ -201,7 +201,7 @@ describe Sambal::Client do
   end
 
   it 'should create commands with one wrapped filename' do
-    @sambal_client.wrap_filenames('cmd',['file1','file2']).should eq('cmd "file1" "file2"')
+    @sambal_client.wrap_filenames('cmd','file1').should eq('cmd "file1"')
   end
 
   it 'should create commands with more than one wrapped filename' do
