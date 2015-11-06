@@ -250,7 +250,7 @@ module Sambal
 
     def wrap_filenames(cmd,filenames)
       filenames = [filenames] unless filenames.kind_of?(Array)
-      filenames.map!{ |filename| '"' + filename + '"' }
+      filenames.map!{ |filename| "\"#{filename}\"" }
       [cmd,filenames].flatten.join(' ')
     end
 
