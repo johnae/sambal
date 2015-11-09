@@ -46,7 +46,7 @@ module Sambal
       begin
         options = {domain: 'WORKGROUP', host: '127.0.0.1', share: '', user: 'guest', password: '--no-pass', port: 445, timeout: 10}.merge(options)
         @timeout = options[:timeout].to_i
-        @o, @i, @pid = PTY.spawn("smbclient \"//#{options[:host]}/#{options[:share]}\" \"#{options[:password]}\" -W \"#{options[:domain]}\" -U \"#{options[:user]}\" -p #{options[:port]}")
+        @o, @i, @pid = PTY.spawn("smbclient \"//#{options[:host]}/#{options[:share]}\" '#{options[:password]}' -W \"#{options[:domain]}\" -U \"#{options[:user]}\" -p #{options[:port]}")
         #@o.set_encoding('UTF-8:UTF-8') ## don't know didn't work, we only have this problem when the files are named using non-english characters
         #@i.set_encoding('UTF-8:UTF-8')
         res = @o.expect(/(.*\n)?smb:.*\\>/, @timeout)[0] rescue nil
@@ -250,7 +250,7 @@ module Sambal
 
     def wrap_filenames(cmd,filenames)
       filenames = [filenames] unless filenames.kind_of?(Array)
-      filenames.map!{ |filename| '"' + filename + '"' }
+      filenames.map!{ |filename| "\"#{filename}\"" }
       [cmd,filenames].flatten.join(' ')
     end
 
