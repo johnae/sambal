@@ -8,8 +8,6 @@ require 'pty'
 require 'expect'
 require 'time'
 require 'tempfile'
-require 'stringio'
-require 'pp'
 
 module Sambal
 
