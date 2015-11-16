@@ -63,15 +63,16 @@ module Sambal
         end
 
         @connected = case res
-        when nil
-          raise RuntimeError.exception("#{smb_response}")
+        when nil # Can probably be removed.
+          $stderr.puts "Failed to connect"
+          false
         when /^put/
           res['putting'].nil? ? false : true
         else
           if res['NT_STATUS']
-            raise RuntimeError.exception("Failed: #{smb_response}")
+            false
           elsif res['timed out'] || res['Server stopped']
-            raise RuntimeError.exception("Failed: #{smb_response}")
+            false
           else
             true
           end
