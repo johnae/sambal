@@ -52,15 +52,14 @@ module Sambal
         res = @o.expect(/(.*\n)?smb:.*\\>/, @timeout)[0] rescue nil
         @connected = case res
         when nil
-          $stderr.puts "Failed to connect"
-          false
+          raise RuntimeError.exception("Failed to connect")
         when /^put/
           res['putting'].nil? ? false : true
         else
           if res['NT_STATUS']
-            false
+            raise RuntimeError.exception("Failed: #{res}")
           elsif res['timed out'] || res['Server stopped']
-            false
+            raise RuntimeError.exception("Failed: #{res}")
           else
             true
           end
