@@ -8,6 +8,8 @@ require 'pty'
 require 'expect'
 require 'time'
 require 'tempfile'
+require 'stringio'
+require 'pp'
 
 module Sambal
 
@@ -49,17 +51,27 @@ module Sambal
         @o, @i, @pid = PTY.spawn("smbclient \"//#{options[:host]}/#{options[:share]}\" '#{options[:password]}' -W \"#{options[:domain]}\" -U \"#{options[:user]}\" -p #{options[:port]}")
         #@o.set_encoding('UTF-8:UTF-8') ## don't know didn't work, we only have this problem when the files are named using non-english characters
         #@i.set_encoding('UTF-8:UTF-8')
-        res = @o.expect(/(.*\n)?smb:.*\\>/, @timeout)[0] rescue nil
+          
+        # Store incase of failure
+        smb_response=@o.sysread(1024)
+
+        begin
+          $expect_verbose=true
+          res = @o.expect(/(.*\n)?smb:.*\\>/, @timeout)[0]
+        rescue Exception => e
+          raise RuntimeError.exception("#{smb_response}: #{e.message}")
+        end
+
         @connected = case res
         when nil
-          raise RuntimeError.exception("Failed to connect")
+          raise RuntimeError.exception("#{smb_response}")
         when /^put/
           res['putting'].nil? ? false : true
         else
           if res['NT_STATUS']
-            raise RuntimeError.exception("Failed: #{res}")
+            raise RuntimeError.exception("Failed: #{smb_response}")
           elsif res['timed out'] || res['Server stopped']
-            raise RuntimeError.exception("Failed: #{res}")
+            raise RuntimeError.exception("Failed: #{smb_response}")
           else
             true
           end
