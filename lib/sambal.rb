@@ -49,6 +49,9 @@ module Sambal
         @o, @i, @pid = PTY.spawn("smbclient \"//#{options[:host]}/#{options[:share]}\" '#{options[:password]}' -W \"#{options[:domain]}\" -U \"#{options[:user]}\" -p #{options[:port]}")
         #@o.set_encoding('UTF-8:UTF-8') ## don't know didn't work, we only have this problem when the files are named using non-english characters
         #@i.set_encoding('UTF-8:UTF-8')
+
+        # Raise if failed to spawn
+        PTY.check(@pid, true)
           
         # Store incase of failure
         smb_response=@o.sysread(1024)
