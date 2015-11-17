@@ -9,6 +9,7 @@ require 'expect'
 require 'time'
 require 'tempfile'
 
+
 module Sambal
 
   class InternalError < RuntimeError; end
@@ -49,11 +50,25 @@ module Sambal
         @o, @i, @pid = PTY.spawn("smbclient \"//#{options[:host]}/#{options[:share]}\" '#{options[:password]}' -W \"#{options[:domain]}\" -U \"#{options[:user]}\" -p #{options[:port]}")
         #@o.set_encoding('UTF-8:UTF-8') ## don't know didn't work, we only have this problem when the files are named using non-english characters
         #@i.set_encoding('UTF-8:UTF-8')
-        res = @o.expect(/(.*\n)?smb:.*\\>/, @timeout)[0] rescue nil
+
+        # Raise if failed to spawn
+        PTY.check(@pid, true)
+          
+        begin
+          $expect_verbose=true
+          res = self.expected(@o, /(.*\n)?smb:.*\\>/, @timeout)
+        rescue Exception => e
+          self.close
+          raise RuntimeError.exception("PTY.spawn() #{e.message} #{@buf}")
+        end
+
+        if not res.nil?
+          res = res[0]
+        end
+
         @connected = case res
         when nil
-          $stderr.puts "Failed to connect"
-          false
+          raise RuntimeError.exception("Failed to connect #{@buf}")
         when /^put/
           res['putting'].nil? ? false : true
         else
@@ -73,6 +88,42 @@ module Sambal
       rescue Exception => e
         raise RuntimeError.exception("Unknown Process Failed!! (#{$!.to_s}): #{e.message.inspect}\n"+e.backtrace.join("\n"))
       end
+    end
+
+    # Borrowed from IO.expect but throws an exception when
+    # we don't get what we expect, with a meaningful 
+    # message (the output from smbclient).
+    def expected(io, pat,timeout=999999999)
+      @buf = ''
+      case pat
+      when String
+        e_pat = Regexp.new(Regexp.quote(pat))
+      when Regexp
+        e_pat = pat
+      else
+        raise TypeError, "unsupported pattern class: #{pat.class}"
+      end
+      @unusedBuf ||= ''
+      while true
+        if not @unusedBuf.empty?
+          c = @unusedBuf.slice!(0).chr
+        elsif !IO.select([io],nil,nil,timeout) or io.eof? then
+          result = nil
+          @unusedBuf = @buf
+          break
+        else
+          c = io.getc.chr
+        end
+        @buf << c
+        if mat=e_pat.match(@buf) then
+          result = [@buf,*mat.to_a[1..-1]]
+          break
+        end
+      end
+      if result.nil?
+        raise "smbclient returned #{@buf}"
+      end
+      result
     end
 
     def logger
@@ -235,7 +286,7 @@ module Sambal
 
     def ask(cmd)
       @i.printf("#{cmd}\n")
-      response = @o.expect(/^smb:.*\\>/,@timeout)[0] rescue nil
+      response = self.expected(@o,/^smb:.*\\>/,@timeout)[0] rescue nil
       if response.nil?
         $stderr.puts "Failed to do #{cmd}"
         raise Exception.new, "Failed to do #{cmd}"
