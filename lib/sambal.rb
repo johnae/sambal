@@ -57,7 +57,8 @@ module Sambal
           $expect_verbose=true
           res = @o.expect(/(.*\n)?smb:.*\\>/, @timeout)[0]
         rescue Exception => e
-          raise RuntimeError.exception("#{smb_response}: #{e.message}")
+          self.close
+          raise RuntimeError.exception("PTY.spawn() #{smb_response}: #{e.message}")
         end
 
         @connected = case res
