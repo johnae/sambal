@@ -106,6 +106,45 @@ describe Sambal::Client do
     end
   end
 
+  describe 'mkdir' do
+    before(:all) do
+      @sambal_client.cd('/')
+    end
+
+    it 'should create a new directory' do
+      result = @sambal_client.mkdir('test')
+      result.should be_successful
+
+      @sambal_client.ls.should have_key('test')
+    end
+
+    it 'should create a directory with spaces' do
+      result = @sambal_client.mkdir('test spaces directory')
+      result.should be_successful
+      @sambal_client.ls.should have_key('test spaces directory')
+    end
+
+    it 'should not create an invalid directory' do
+      result = @sambal_client.mkdir('**')
+      result.should_not be_successful
+    end
+
+    it 'should not overwrite an existing directory' do
+      # Ensure our test directory exists
+      @sambal_client.rmdir('test')
+      @sambal_client.mkdir('test')
+      @sambal_client.ls.should have_key('test')
+
+      result = @sambal_client.mkdir('test')
+      result.should_not be_successful
+    end
+
+    it 'should handle empty directory names' do
+      @sambal_client.mkdir('').should_not be_successful
+      @sambal_client.mkdir('   ').should_not be_successful
+    end
+  end
+
   it "should get files from an smb server" do
     @sambal_client.get(testfile, "/tmp/sambal_spec_testfile.txt").should be_successful
     File.exists?("/tmp/sambal_spec_testfile.txt").should == true
