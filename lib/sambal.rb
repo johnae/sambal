@@ -157,6 +157,15 @@ module Sambal
       t.close
     end
 
+    def mkdir(destination)
+       response = ask_wrapped 'mkdir', [destination]
+       if response =~ /name(.*)collision/im
+         Response.new(response, false)
+       else
+         Response.new(response, true)
+       end
+    end
+
     def rmdir(dir)
       response = cd dir
       return response if response.failure?
