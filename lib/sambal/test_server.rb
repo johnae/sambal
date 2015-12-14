@@ -31,15 +31,17 @@ module Sambal
     attr_reader :run_as
     attr_reader :host
 
-    def initialize(root_path="/tmp/sambal_test_server_#{Time.now.to_i}", share_name='sambal_test', run_as=ENV['USER'])
-      @erb_path = "#{File.expand_path(File.dirname(__FILE__))}/smb.conf.erb"
+    def initialize(root_path="../../tmp/sambal_test_server_#{Time.now.to_i}", share_name='sambal_test', run_as=ENV['USER'])
+      current_working_dir = Pathname.new(File.expand_path(File.dirname(__FILE__)))
+
+      @erb_path = current_working_dir.join("smb.conf.erb")
       @host = "127.0.0.1" ## will always just be localhost
-      @root_path = root_path
-      @share_path = "#{root_path}/share"
+      @root_path = current_working_dir.join(root_path)
+      @share_path = @root_path.join("share/")
       @share_name = share_name
-      @config_path = "#{root_path}/smb.conf"
-      @lock_path = "#{root_path}"
-      @pid_dir = "#{root_path}"
+      @config_path = @root_path.join("smb.conf")
+      @lock_path = @root_path
+      @pid_dir = @root_path
       @port = Random.new(Time.now.to_i).rand(2345..5678).to_i
       @run_as = run_as
       FileUtils.mkdir_p @share_path
