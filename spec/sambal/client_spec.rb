@@ -81,28 +81,28 @@ describe Sambal::Client do
   end
 
   describe 'ls' do
-    before(:all) do
+    before(:each) do
       FileUtils.cp "#{test_server.share_path}/#{testfile}", "#{test_server.share_path}/#{testfile2}"
       FileUtils.cp "#{test_server.share_path}/#{testfile}", "#{test_server.share_path}/#{testfile3}"
     end
 
     it "should list files with spaces in their names" do
       result = @sambal_client.ls
-      result.should have_key(test_directory_with_space_in_name)
+      expect(result).to have_key(test_directory_with_space_in_name)
     end
 
     it "should list files on an smb server" do
       result = @sambal_client.ls
-      result.should have_key(testfile)
-      result.should have_key(testfile2)
-      result.should have_key(testfile3)
+      expect(result).to have_key(testfile)
+      expect(result).to have_key(testfile2)
+      expect(result).to have_key(testfile3)
     end
 
     it "should list files using a wildcard on an smb server" do
       result = @sambal_client.ls '*.txt'
-      result.should have_key(testfile)
-      result.should_not have_key(testfile2)
-      result.should have_key(testfile3)
+      expect(result).to have_key(testfile)
+      expect(result).not_to have_key(testfile2)
+      expect(result).to have_key(testfile3)
     end
   end
 
@@ -146,109 +146,109 @@ describe Sambal::Client do
   end
 
   it "should get files from an smb server" do
-    @sambal_client.get(testfile, "/tmp/sambal_spec_testfile.txt").should be_successful
-    File.exists?("/tmp/sambal_spec_testfile.txt").should == true
-    File.size("/tmp/sambal_spec_testfile.txt").should == @sambal_client.ls[testfile][:size].to_i
+    expect(@sambal_client.get(testfile, "/tmp/sambal_spec_testfile.txt")).to be_success
+    expect(File.exists?("/tmp/sambal_spec_testfile.txt")).to be(true)
+    expect(File.size("/tmp/sambal_spec_testfile.txt")).to eq(@sambal_client.ls[testfile][:size].to_i)
   end
 
   it "should get files in a dir with spaces in it's name from an smb server" do
-    @sambal_client.get(test_spaces_in_name_path, "/tmp/sambal_this_file_was_in_dir_with_spaces.txt").should be_successful
-    File.exists?("/tmp/sambal_this_file_was_in_dir_with_spaces.txt").should == true
+    expect(@sambal_client.get(test_spaces_in_name_path, "/tmp/sambal_this_file_was_in_dir_with_spaces.txt")).to be_success
+    expect(File.exists?("/tmp/sambal_this_file_was_in_dir_with_spaces.txt")).to be(true)
     @sambal_client.cd(test_directory_with_space_in_name)
-    File.size("/tmp/sambal_this_file_was_in_dir_with_spaces.txt").should == @sambal_client.ls[test_file_in_directory_with_space_in_name][:size].to_i
+    expect(File.size("/tmp/sambal_this_file_was_in_dir_with_spaces.txt")).to eq(@sambal_client.ls[test_file_in_directory_with_space_in_name][:size].to_i)
   end
 
   it "should get files in a subdirectory while in a higher level directory from an smb server" do
-    @sambal_client.get(testfile_sub_path, "/tmp/sambal_spec_testfile_sub.txt").should be_successful
-    File.exists?("/tmp/sambal_spec_testfile_sub.txt").should == true
+    expect(@sambal_client.get(testfile_sub_path, "/tmp/sambal_spec_testfile_sub.txt")).to be_success
+    expect(File.exists?("/tmp/sambal_spec_testfile_sub.txt")).to be(true)
     @sambal_client.cd(sub_directory_path)
-    File.size("/tmp/sambal_spec_testfile_sub.txt").should == @sambal_client.ls[testfile_sub][:size].to_i
+    expect(File.size("/tmp/sambal_spec_testfile_sub.txt")).to eq(@sambal_client.ls[testfile_sub][:size].to_i)
   end
 
   it "should not be successful when getting a file from an smb server fails" do
     result = @sambal_client.get("non_existant_file.txt", "/tmp/sambal_spec_non_existant_file.txt")
-    result.should_not be_successful
-    result.message.should match /^NT_.*$/
-    result.message.split("\n").should have(1).line
-    File.exists?("/tmp/sambal_spec_non_existant_file.txt").should == false
+    expect(result).not_to be_success
+    expect(result.message).to match(/^NT_.*$/)
+    expect(result.message.split("\n").size).to eq(1)
+    expect(File.exists?("/tmp/sambal_spec_non_existant_file.txt")).to be(false)
   end
 
   it "should upload files to an smb server" do
-    @sambal_client.ls.should_not have_key("uploaded_file.txt")
-    @sambal_client.put(file_to_upload.path, 'uploaded_file.txt').should be_successful
-    @sambal_client.ls.should have_key("uploaded_file.txt")
+    expect(@sambal_client.ls).not_to have_key("uploaded_file.txt")
+    expect(@sambal_client.put(file_to_upload.path, 'uploaded_file.txt')).to be_success
+    expect(@sambal_client.ls).to have_key("uploaded_file.txt")
   end
 
   it "should upload content to an smb server" do
-    @sambal_client.ls.should_not have_key("content_uploaded_file.txt")
-    @sambal_client.put_content("Content upload", 'content_uploaded_file.txt').should be_successful
-    @sambal_client.ls.should have_key("content_uploaded_file.txt")
+    expect(@sambal_client.ls).not_to have_key("content_uploaded_file.txt")
+    expect(@sambal_client.put_content("Content upload", 'content_uploaded_file.txt')).to be_success
+    expect(@sambal_client.ls).to have_key("content_uploaded_file.txt")
   end
 
   it "should delete files on an smb server" do
-    @sambal_client.del(testfile).should be_successful
-    @sambal_client.ls.should_not have_key(testfile)
+    expect(@sambal_client.del(testfile)).to be_success
+    expect(@sambal_client.ls).not_to have_key(testfile)
   end
 
   it "should not be successful when deleting a file from an smb server fails" do
     result = @sambal_client.del("non_existant_file.txt")
-    result.should_not be_successful
-    result.message.should match /^NT_.*$/
-    result.message.split("\n").should have(1).line
+    expect(result).not_to be_success
+    expect(result.message).to match(/^NT_.*$/)
+    expect(result.message.split("\n").size).to eq(1)
   end
 
   it "should switch directory on an smb server" do
-    @sambal_client.put_content("testing directories", 'dirtest.txt').should be_successful ## a bit stupid, but now we can check that this isn't listed when we switch dirs
-    @sambal_client.ls.should have_key('dirtest.txt')
-    @sambal_client.cd(test_directory).should be_successful
-    @sambal_client.ls.should_not have_key('dirtest.txt')
-    @sambal_client.put_content("in #{test_directory}", 'intestdir.txt').should be_successful
-    @sambal_client.ls.should have_key('intestdir.txt')
-    @sambal_client.cd('..').should be_successful
-    @sambal_client.ls.should_not have_key('intestdir.txt')
-    @sambal_client.ls.should have_key('dirtest.txt')
+    expect(@sambal_client.put_content("testing directories", 'dirtest.txt')).to be_success ## a bit stupid, but now we can check that this isn't listed when we switch dirs
+    expect(@sambal_client.ls).to have_key('dirtest.txt')
+    expect(@sambal_client.cd(test_directory)).to be_success
+    expect(@sambal_client.ls).not_to have_key('dirtest.txt')
+    expect(@sambal_client.put_content("in #{test_directory}", 'intestdir.txt')).to be_success
+    expect(@sambal_client.ls).to have_key('intestdir.txt')
+    expect(@sambal_client.cd('..')).to be_success
+    expect(@sambal_client.ls).not_to have_key('intestdir.txt')
+    expect(@sambal_client.ls).to have_key('dirtest.txt')
   end
 
   it "should delete files in subdirectory while in a higher level directory" do
     @sambal_client.cd('/')
     @sambal_client.cd(test_directory)
-    @sambal_client.put_content("some content", "file_to_delete").should be_successful
+    expect(@sambal_client.put_content("some content", "file_to_delete")).to be_success
     @sambal_client.cd('/')
-    @sambal_client.del("#{test_directory}/file_to_delete").should be_successful
+    expect(@sambal_client.del("#{test_directory}/file_to_delete")).to be_success
     @sambal_client.cd('/')
-    @sambal_client.ls.should have_key("#{testfile}")
+    expect(@sambal_client.ls).to have_key("#{testfile}")
   end
 
   it "should recursively delete a directory" do
     @sambal_client.cd('/')
     @sambal_client.cd(test_directory)
-    @sambal_client.put_content("some content", "file_to_delete").should be_successful
+    expect(@sambal_client.put_content("some content", "file_to_delete")).to be_success
     @sambal_client.cd('/')
-    @sambal_client.rmdir("#{test_directory}").should be_successful
+    expect(@sambal_client.rmdir("#{test_directory}")).to be_success
     @sambal_client.cd('/')
-    @sambal_client.ls.should_not have_key("#{test_directory}")
+    expect(@sambal_client.ls).not_to have_key("#{test_directory}")
   end
 
   it "should not be successful when recursively deleting a nonexistant directory" do
     @sambal_client.cd('/')
-    @sambal_client.rmdir("this_doesnt_exist").should_not be_successful
+    expect(@sambal_client.rmdir("this_doesnt_exist")).not_to be_success
   end
 
   it "should not be successful when command fails" do
     result = @sambal_client.put("jhfahsf iasifasifh", "jsfijsf ijidjag")
-    result.should_not be_successful
+    expect(result).not_to be_success
   end
 
   it 'should create commands with one wrapped filename' do
-    @sambal_client.wrap_filenames('cmd','file1').should eq('cmd "file1"')
+    expect(@sambal_client.wrap_filenames('cmd','file1')).to eq('cmd "file1"')
   end
 
   it 'should create commands with more than one wrapped filename' do
-    @sambal_client.wrap_filenames('cmd',['file1','file2']).should eq('cmd "file1" "file2"')
+    expect(@sambal_client.wrap_filenames('cmd',['file1','file2'])).to eq('cmd "file1" "file2"')
   end
 
   it 'should create commands with pathnames instead of strings' do
-    @sambal_client.wrap_filenames('cmd',[Pathname.new('file1'), Pathname.new('file2')]).should eq('cmd "file1" "file2"')
+    expect(@sambal_client.wrap_filenames('cmd',[Pathname.new('file1'), Pathname.new('file2')])).to eq('cmd "file1" "file2"')
   end
 
 end
