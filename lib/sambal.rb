@@ -157,6 +157,16 @@ module Sambal
       t.close
     end
 
+    def mkdir(directory)
+      return Response.new('directory name is empty', false) if directory.strip.empty?
+      response = ask_wrapped('mkdir', '"' + directory + '"')
+      if response =~ /NT_STATUS_OBJECT_NAME_(INVALID|COLLISION)/
+        Response.new(response, false)
+      else
+        Response.new(response, true)
+      end
+    end
+
     def rmdir(dir)
       response = cd dir
       return response if response.failure?
