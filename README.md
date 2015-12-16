@@ -1,3 +1,5 @@
+[Circle CI](https://circleci.com/gh/johnae/sambal.svg?style=svg)](https://circleci.com/gh/johnae/sambal)
+
 # Sambal
 
 Sambal is a ruby samba client
