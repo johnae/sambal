@@ -1,4 +1,4 @@
-[Circle CI](https://circleci.com/gh/johnae/sambal.svg?style=svg)](https://circleci.com/gh/johnae/sambal)
+[![Circle CI](https://circleci.com/gh/johnae/sambal.svg?style=svg)](https://circleci.com/gh/johnae/sambal)
 
 # Sambal
 
