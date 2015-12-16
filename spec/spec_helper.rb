@@ -9,10 +9,11 @@ $:.unshift(lib_path) if File.directory?(lib_path) && !$:.include?(lib_path)
 
 require 'sambal'
 require 'sambal/test_server'
+require 'rspec/expectations'
 
 RSpec::Matchers.define :be_successful do
   match do |actual|
-    actual.success?.should be_true
+    actual.success? == true
   end
 end
 
@@ -31,7 +32,7 @@ RSpec.configure do |config|
   # config.mock_with :flexmock
   # config.mock_with :rr
   config.mock_with :rspec
-  
+
   ## perhaps this should be removed as well
   ## and done in Rakefile?
   config.color = true

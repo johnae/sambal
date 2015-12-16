@@ -34,6 +34,8 @@
 
 ## Browsing/Identification ###
 
+ncalrpc dir = <%= ncalrpc_dir %>
+
 # Change this to the workgroup/NT-domain name your Samba server will part of
    workgroup = WORKGROUP
 
@@ -75,7 +77,7 @@
 
 # This tells Samba to use a separate log file for each machine
 # that connects
-   log file = /tmp/vp6samba/samba/log.%m
+log file = <%= log_path %>/log.%m
 
 # Cap the size of the individual log files (in KiB).
    max log size = 1000
@@ -99,8 +101,8 @@
 # in this server for every user accessing the server. See
 # /usr/share/doc/samba-doc/htmldocs/Samba3-HOWTO/ServerType.html
 # in the samba-doc package for details.
-# security = user
-  security = share
+ security = user
+#  security = share
 # we set it to whoever is running the specs
   guest account = <%= local_user %>
 

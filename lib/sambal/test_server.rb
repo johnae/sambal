@@ -26,20 +26,30 @@ module Sambal
     attr_reader :port
     attr_reader :share_path
     attr_reader :root_path
+    attr_reader :tmp_path
+    attr_reader :private_dir
+    attr_reader :cache_dir
+    attr_reader :state_dir
     attr_reader :config_path
     attr_reader :share_name
     attr_reader :run_as
     attr_reader :host
 
-    def initialize(root_path="/tmp/sambal_test_server_#{Time.now.to_i}", share_name='sambal_test', run_as=ENV['USER'])
+    def initialize(share_name='sambal_test', run_as=ENV['USER'])
       @erb_path = "#{File.expand_path(File.dirname(__FILE__))}/smb.conf.erb"
       @host = "127.0.0.1" ## will always just be localhost
-      @root_path = root_path
-      @share_path = "#{root_path}/share"
+      @root_path = File.expand_path(File.dirname(File.dirname(File.dirname(__FILE__))))
+      @tmp_path = "#{root_path}/spec_tmp"
+      @share_path = "#{tmp_path}/share"
       @share_name = share_name
-      @config_path = "#{root_path}/smb.conf"
-      @lock_path = "#{root_path}"
-      @pid_dir = "#{root_path}"
+      @config_path = "#{tmp_path}/smb.conf"
+      @lock_path = "#{tmp_path}"
+      @pid_dir = "#{tmp_path}"
+      @cache_dir = "#{tmp_path}"
+      @state_dir = "#{tmp_path}"
+      @log_path = "#{tmp_path}"
+      @private_dir = "#{tmp_path}"
+      @ncalrpc_dir = "#{tmp_path}"
       @port = Random.new(Time.now.to_i).rand(2345..5678).to_i
       @run_as = run_as
       FileUtils.mkdir_p @share_path
@@ -53,18 +63,18 @@ module Sambal
 
     def write_config
       File.open(@config_path, 'w') do |f|
-        f << Document.new(IO.binread(@erb_path)).interpolate(samba_share: @share_path, local_user: @run_as, share_name: @share_name)
+        f << Document.new(IO.binread(@erb_path)).interpolate(samba_share: @share_path, local_user: @run_as, share_name: @share_name, log_path: @log_path, ncalrpc_dir: @ncalrpc_dir)
       end
     end
 
     def start
       if RUBY_PLATFORM=="java"
         @smb_server_pid = Thread.new do
-          `smbd -S -F -s #{@config_path} -p #{@port} --lockdir=#{@lock_path} --piddir=#{@pid_dir}`
+          `smbd -S -F -s #{@config_path} -p #{@port} --lockdir=#{@lock_path} --piddir=#{@pid_dir} --private-dir=#{@private_dir} --cachedir=#{@cache_dir} --statedir=#{@state_dir} > #{@log_path}/smb.log`
         end
       else
         @smb_server_pid = fork do
-          `smbd -S -F -s #{@config_path} -p #{@port} --lockdir=#{@lock_path} --piddir=#{@pid_dir}`
+          `smbd -S -F -s #{@config_path} -p #{@port} --lockdir=#{@lock_path} --piddir=#{@pid_dir} --private-dir=#{@private_dir} --cachedir=#{@cache_dir} --statedir=#{@state_dir} > #{@log_path}/smb.log`
         end
       end
       sleep 2 ## takes a short time to start up
@@ -78,7 +88,7 @@ module Sambal
 
     def stop!
       stop
-      FileUtils.rm_rf @root_path
+      FileUtils.rm_rf @tmp_path unless ENV.key?('KEEP_SMB_TMP')
     end
 
   end

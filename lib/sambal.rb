@@ -159,7 +159,7 @@ module Sambal
 
     def mkdir(directory)
       return Response.new('directory name is empty', false) if directory.strip.empty?
-      response = ask_wrapped('mkdir', '"' + directory + '"')
+      response = ask_wrapped('mkdir', directory)
       if response =~ /NT_STATUS_OBJECT_NAME_(INVALID|COLLISION)/
         Response.new(response, false)
       else
