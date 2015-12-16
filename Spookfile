@@ -1,0 +1,11 @@
+-- How much output do we want?
+log_level "INFO"
+
+rspec = command "bundle exec rspec -f d"
+
+watch "lib", "spec", ->
+  on_changed "^(spec)/(spec_helper%.rb)", -> rspec "spec"
+  on_changed "^spec/(.*)_spec%.rb", (a) -> rspec "spec/#{a}_spec.rb"
+  on_changed "^lib/sambal%.rb", (a) -> rspec "spec/sambal/client_spec.rb"
+
+notifier "#{os.getenv('HOME')}/.spook/notifiers"
