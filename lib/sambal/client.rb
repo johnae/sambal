@@ -70,6 +70,10 @@ module Sambal
       parse_files(ask_wrapped('ls', qualifier))
     end
 
+    def exists?(path)
+      ls(path).key? File.basename(path)
+    end
+
     def cd(dir)
       response = ask("cd \"#{dir}\"")
       if response.split("\r\n").join('') =~ /NT_STATUS_OBJECT_NAME_NOT_FOUND/

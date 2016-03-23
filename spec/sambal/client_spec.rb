@@ -84,6 +84,20 @@ describe Sambal::Client do
     end
   end
 
+  describe 'exists?' do
+    it "returns true if a file or directory exists at a given path" do
+      expect(@sambal_client.exists?(TESTFILE)).to eq(true)
+      expect(@sambal_client.exists?(TESTFILE_SUB_PATH)).to eq(true)
+      expect(@sambal_client.exists?(TEST_DIRECTORY)).to eq(true)
+      expect(@sambal_client.exists?(SUB_DIRECTORY_PATH)).to eq(true)
+    end
+
+    it "returns false if nothing exists at a given path" do
+      expect(@sambal_client.exists?('non_existing_file.txt')).to eq(false)
+      expect(@sambal_client.exists?('non_existing_directory')).to eq(false)
+    end
+  end
+
   describe 'mkdir' do
     before(:all) do
       @sambal_client.cd('/')

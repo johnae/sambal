@@ -24,13 +24,13 @@ Or install it yourself as:
 
 A working installation of samba, specifically the "smbclient" command line utility. See http://www.samba.org for more information.
 On a mac this can be installed through homebrew https://github.com/mxcl/homebrew, like this:
-    
+
     brew install samba
 
 On the Mac it can probably also be installed both through Fink and MacPorts.
 
 On Linux (Ubuntu) it's as easy as:
-    
+
     apt-get install smbclient
 
 It should be available in a similar way on all major Linux distributions.
@@ -40,9 +40,11 @@ It should be available in a similar way on all major Linux distributions.
     client = Sambal::Client.new(domain: 'WORKGROUP', host: '127.0.0.1', share: '', user: 'guest', password: '--no-pass', port: 445)
     client.ls # returns hash of files
     client.put("local_file.txt","remote_file.txt") # uploads file to server
+    client.exists?("remote_file.txt") # checks if file is on server
     client.put_content("My content here", "remote_file") # uploads content to a file on server
     client.get("remote_file.txt", "local_file.txt") # downloads file from server
     client.del("remote_file.txt") # deletes files from server
+    client.exists?("some_directory") # checks if directory is on server
     client.cd("some_directory") # changes directory on server
     client.close # closes connection
 
