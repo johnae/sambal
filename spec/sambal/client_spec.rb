@@ -6,6 +6,7 @@ require 'tempfile'
 describe Sambal::Client do
 
   TEST_DIRECTORY_WITH_SPACE_IN_NAME = 'my dir with spaces in name'
+  TEST_DIRECTORY_WITH_CONSECUTIVE_SPACES_IN_NAME = 'my dir with   consecutive spaces in name'
   TEST_FILE_IN_DIRECTORY_WITH_SPACE_IN_NAME = 'a_file_in_a_dir_with_spaces_in_name'
   TEST_SPACES_IN_NAME_PATH = "#{TEST_DIRECTORY_WITH_SPACE_IN_NAME}/#{TEST_FILE_IN_DIRECTORY_WITH_SPACE_IN_NAME}"
   TEST_DIRECTORY = 'testdir'
@@ -26,6 +27,7 @@ describe Sambal::Client do
       f << "Hello"
     end
     FileUtils.mkdir_p "#{test_server.share_path}/#{TEST_DIRECTORY_WITH_SPACE_IN_NAME}"
+    FileUtils.mkdir_p "#{test_server.share_path}/#{TEST_DIRECTORY_WITH_CONSECUTIVE_SPACES_IN_NAME}"
     File.open("#{test_server.share_path}/#{TEST_DIRECTORY_WITH_SPACE_IN_NAME}/#{TEST_FILE_IN_DIRECTORY_WITH_SPACE_IN_NAME}", 'w') do |f|
       f << "Hello there"
     end
@@ -67,6 +69,7 @@ describe Sambal::Client do
     it "should list files with spaces in their names" do
       result = @sambal_client.ls
       expect(result).to have_key(TEST_DIRECTORY_WITH_SPACE_IN_NAME)
+      expect(result).to have_key(TEST_DIRECTORY_WITH_CONSECUTIVE_SPACES_IN_NAME)
     end
 
     it "should list files on an smb server" do
