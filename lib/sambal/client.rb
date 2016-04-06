@@ -83,9 +83,9 @@ module Sambal
       end
     end
 
-    def get(file, output)
+    def get(filename, output)
       begin
-        file_context(file) do |file|
+        file_context(filename) do |file|
           response = ask_wrapped 'get', [file, output]
           if response =~ /^getting\sfile.*$/
             Response.new(response, true)
@@ -161,9 +161,9 @@ module Sambal
       end
     end
 
-    def del(file)
+    def del(filename)
       begin
-        file_context(file) do |file|
+        file_context(filename) do |file|
           response = ask_wrapped 'del', file
           next_line = response.split("\n")[1]
           if next_line =~ /^smb:.*\\>/
@@ -233,30 +233,33 @@ module Sambal
       [cmd,filenames].flatten.join(' ')
     end
 
+    # Parse output from Client#ls
+    # Returns Hash of file names with meta information
     def parse_files(str)
-      files = {}
-      str.each_line do |line|
-        if line =~ /\s+([\w\.\d\-\_\?\!\s]+)\s+([DAH]?)\s+(\d+)\s+(.+)$/
-          lsplit = line.split(/\s{2,}/)
-          #$stderr.puts "lsplit: #{lsplit}"
-          lsplit.shift ## remove first empty string
-          name = lsplit.shift#$1
-          if lsplit.first =~ /^[A-Za-z]+$/
-            type = lsplit.shift
-          else
-            type = ""
-          end
-          size = lsplit.shift#$3
-          date = lsplit.join(' ')#$4
-          name.gsub!(/\s+$/,'')
-          files[name] = if type =~/^D.*$/
-            {type: :directory, size: size, modified: (Time.parse(date) rescue "!!#{date}")}
-          else
-            {type: :file, size: size , modified: (Time.parse(date) rescue "!!#{date}")}
-          end
+      listing = str.each_line.inject({}) do |files, line|
+        line.strip!
+        name = line[/.*(?=\b\s+[ABDHNRS]+\s+\d+)/]
+        name ||= line[/^\.\.|^\./]
+
+        if name
+          line.sub!(name, '')
+          line.strip!
+
+          type = line[0] == "D" ? :directory : :file
+          size = line[/\d+/]
+
+          date = line[/(?<=\d  )\D.*$/]
+          modified = (Time.parse(date) rescue "!!#{date}")
+
+          files[name] = {
+            type: type,
+            size: size,
+            modified: modified
+          }
         end
+        files
       end
-      files
+      Hash[listing.sort]
     end
   end
 end
