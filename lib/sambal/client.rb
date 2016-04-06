@@ -83,9 +83,9 @@ module Sambal
       end
     end
 
-    def get(file, output)
+    def get(filename, output)
       begin
-        file_context(file) do |file|
+        file_context(filename) do |file|
           response = ask_wrapped 'get', [file, output]
           if response =~ /^getting\sfile.*$/
             Response.new(response, true)
@@ -161,9 +161,9 @@ module Sambal
       end
     end
 
-    def del(file)
+    def del(filename)
       begin
-        file_context(file) do |file|
+        file_context(filename) do |file|
           response = ask_wrapped 'del', file
           next_line = response.split("\n")[1]
           if next_line =~ /^smb:.*\\>/
