@@ -205,6 +205,33 @@ module Sambal
     #  end
     end
 
+
+    # same as ls method except this returns an array of hashes instead of a hash to prevent problems where a directory and file share a name
+    def ls_array(qualifier = '*')
+      parse_files_to_array(ask_wrapped('ls', qualifier))
+    end
+
+    # parses output instead of the name being the key it is accessed in the hash by :name and :hidden is now returned in the hash as well
+    def parse_files_to_array(str)
+      files = []
+      regex = /^([^\n]+)\s+([ABDHNRS]+)\s+(\d+)\s{2}([A-Za-z]{3}\s[A-Za-z]{3}\s(?:\d|\s)\d\s\d{2}:\d{2}:\d{2}\s\d{4})\n$/
+      str.each_line do |l|
+        match = l.match regex
+        begin
+          match = match.to_a.map(&:strip)
+          name = match[1]
+          flags = match[2]
+          type = flags =~ /D/ ? :directory : :file
+          hidden = !!(flags =~ /H/)
+          size = match[3].to_i
+          date = match[4]
+          date = (Time.parse(date) rescue date)
+          files << {name: name, type: type, hidden: hidden, size: size, modified: date}
+        end unless match.nil?
+      end
+      files
+    end
+
     def close
       @i.close
       @o.close
