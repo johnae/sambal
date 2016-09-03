@@ -214,7 +214,7 @@ module Sambal
     # parses output instead of the name being the key it is accessed in the hash by :name and :hidden is now returned in the hash as well
     def parse_files_to_array(str)
       files = []
-      regex = /^([^\n]+)\s+([ABDHNRS]+)\s+(\d+)\s{2}([A-Za-z]{3}\s[A-Za-z]{3}\s(?:\d|\s)\d\s\d{2}:\d{2}:\d{2}\s\d{4})\n$/
+      regex = /^([^\n]+)\s+([ABDHNRS]+)\s+(\d+)\s{2}([A-Za-z]{3}\s[A-Za-z]{3}\s(?:\d|\s)\d\s\d{2}:\d{2}:\d{2}\s\d{4})$/
       str.each_line do |l|
         match = l.match regex
         begin
