@@ -9,12 +9,34 @@ module Sambal
 
     attr_reader :connected
 
-    def initialize(options={})
+    def parsed_options(user_options)
+      default_options = {
+        domain: 'WORKGROUP',
+        host: '127.0.0.1',
+        share: '',
+        user: 'guest',
+        password: '--no-pass',
+        port: 445,
+        timeout: 10,
+        columns: 80
+      }
+
+      options = default_options.merge(user_options)
+      options[:ip_address] ||= options[:host] if options[:host] == default_options[:host]
+      options
+    end
+
+    def initialize(user_options={})
       begin
-        options = {domain: 'WORKGROUP', host: '127.0.0.1', share: '', user: 'guest', password: '--no-pass', port: 445, timeout: 10, columns: 80}.merge(options)
+        options = parsed_options(user_options)
         @timeout = options[:timeout].to_i
-        @o, @i, @pid = PTY.spawn("COLUMNS=#{options[:columns]} smbclient \"//#{options[:host]}/#{options[:share]}\" '#{options[:password]}' -W \"#{options[:domain]}\" -U \"#{options[:user]}\" -p #{options[:port]}")
-        res = @o.expect(/(.*\n)?smb:.*\\>/, @timeout)[0] rescue nil
+
+        option_flags = "-W \"#{options[:domain]}\" -U \"#{options[:user]}\" -I #{options[:ip_address]} -p #{options[:port]}"
+        command = "COLUMNS=#{options[:columns]} smbclient \"//#{options[:host]}/#{options[:share]}\" '#{options[:password]}'"
+
+        @output, @input, @pid = PTY.spawn(command + ' ' + option_flags)
+
+        res = @output.expect(/(.*\n)?smb:.*\\>/, @timeout)[0] rescue nil
         @connected = case res
         when nil
           $stderr.puts "Failed to connect"
@@ -206,15 +228,15 @@ module Sambal
     end
 
     def close
-      @i.close
-      @o.close
+      @input.close
+      @output.close
       Process.wait(@pid)
       @connected = false
     end
 
     def ask(cmd)
-      @i.printf("#{cmd}\n")
-      response = @o.expect(/^smb:.*\\>/,@timeout)[0] rescue nil
+      @input.printf("#{cmd}\n")
+      response = @output.expect(/^smb:.*\\>/,@timeout)[0] rescue nil
       if response.nil?
         $stderr.puts "Failed to do #{cmd}"
         raise Exception.new, "Failed to do #{cmd}"
