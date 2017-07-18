@@ -15,7 +15,7 @@ module Sambal
         host: '127.0.0.1',
         share: '',
         user: 'guest',
-        password: '--no-pass',
+        password: false,
         port: 445,
         timeout: 10,
         columns: 80
@@ -31,8 +31,9 @@ module Sambal
         options = parsed_options(user_options)
         @timeout = options[:timeout].to_i
 
-        option_flags = "-W \"#{options[:domain]}\" -U \"#{options[:user]}\" -I #{options[:ip_address]} -p #{options[:port]}"
-        command = "COLUMNS=#{options[:columns]} smbclient \"//#{options[:host]}/#{options[:share]}\" '#{options[:password]}'"
+        option_flags = "-W \"#{options[:domain]}\" -U \"#{options[:user]}\" -I #{options[:ip_address]} -p #{options[:port]} -s /dev/null"
+        password = options[:password] ? "'#{options[:password]}'" : "--no-pass"
+        command = "COLUMNS=#{options[:columns]} smbclient \"//#{options[:host]}/#{options[:share]}\" #{password}"
 
         @output, @input, @pid = PTY.spawn(command + ' ' + option_flags)
 

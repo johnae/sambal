@@ -36,10 +36,10 @@ describe Sambal::Client do
     File.open("#{test_server.share_path}/#{TEST_DIRECTORY}/#{TEST_SUB_DIRECTORY}/#{TESTFILE_SUB}", 'w') do |f|
       f << "Hello"
     end
-    FileUtils.chmod 0775, "#{test_server.share_path}/#{TEST_DIRECTORY_WITH_SPACE_IN_NAME}/#{TEST_FILE_IN_DIRECTORY_WITH_SPACE_IN_NAME}"
-    FileUtils.chmod 0775, "#{test_server.share_path}/#{TEST_DIRECTORY}/#{TEST_SUB_DIRECTORY}/#{TESTFILE_SUB}"
-    FileUtils.chmod 0775, "#{test_server.share_path}/#{TEST_DIRECTORY}/#{TEST_SUB_DIRECTORY}"
-    FileUtils.chmod 0775, "#{test_server.share_path}/#{TEST_DIRECTORY}"
+    FileUtils.chmod 0777, "#{test_server.share_path}/#{TEST_DIRECTORY_WITH_SPACE_IN_NAME}/#{TEST_FILE_IN_DIRECTORY_WITH_SPACE_IN_NAME}"
+    FileUtils.chmod 0777, "#{test_server.share_path}/#{TEST_DIRECTORY}/#{TEST_SUB_DIRECTORY}/#{TESTFILE_SUB}"
+    FileUtils.chmod 0777, "#{test_server.share_path}/#{TEST_DIRECTORY}/#{TEST_SUB_DIRECTORY}"
+    FileUtils.chmod 0777, "#{test_server.share_path}/#{TEST_DIRECTORY}"
     FileUtils.chmod 0777, "#{test_server.share_path}/#{TESTFILE}"
     @sambal_client.cd('/')
   end

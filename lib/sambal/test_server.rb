@@ -53,6 +53,7 @@ module Sambal
       @port = Random.new(Time.now.to_i).rand(2345..5678).to_i
       @run_as = run_as
       FileUtils.mkdir_p @share_path
+      File.chmod 0777, @share_path
       write_config
     end
 
@@ -70,11 +71,11 @@ module Sambal
     def start
       if RUBY_PLATFORM=="java"
         @smb_server_pid = Thread.new do
-          `smbd -S -F -s #{@config_path} -p #{@port} --lockdir=#{@lock_path} --piddir=#{@pid_dir} --private-dir=#{@private_dir} --cachedir=#{@cache_dir} --statedir=#{@state_dir} > #{@log_path}/smb.log`
+          `smbd -S -F -s #{@config_path} -p #{@port} --option="lockdir"=#{@lock_path} --option="pid directory"=#{@pid_dir} --option="private directory"=#{@private_dir} --option="cache directory"=#{@cache_dir} --option="state directory"=#{@state_dir} > #{@log_path}/smb.log`
         end
       else
         @smb_server_pid = fork do
-          `smbd -S -F -s #{@config_path} -p #{@port} --lockdir=#{@lock_path} --piddir=#{@pid_dir} --private-dir=#{@private_dir} --cachedir=#{@cache_dir} --statedir=#{@state_dir} > #{@log_path}/smb.log`
+          `smbd -S -F -s #{@config_path} -p #{@port} --option="lockdir"=#{@lock_path} --option="pid directory"=#{@pid_dir} --option="private directory"=#{@private_dir} --option="cache directory"=#{@cache_dir} --option="state directory"=#{@state_dir} > #{@log_path}/smb.log`
         end
       end
       sleep 2 ## takes a short time to start up
