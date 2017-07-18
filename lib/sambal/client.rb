@@ -31,7 +31,9 @@ module Sambal
         options = parsed_options(user_options)
         @timeout = options[:timeout].to_i
 
-        option_flags = "-W \"#{options[:domain]}\" -U \"#{options[:user]}\" -I #{options[:ip_address]} -p #{options[:port]} -s /dev/null"
+        option_flags = "-W \"#{options[:domain]}\" -U \"#{options[:user]}\""
+        option_flags = "#{option_flags} -I #{options[:ip_address]}" if options[:ip_address]
+        option_flags = "#{option_flags} -p #{options[:port]} -s /dev/null"
         password = options[:password] ? "'#{options[:password]}'" : "--no-pass"
         command = "COLUMNS=#{options[:columns]} smbclient \"//#{options[:host]}/#{options[:share]}\" #{password}"
 
