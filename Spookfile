@@ -1,11 +1,45 @@
--- How much output do we want?
+-- vim: syntax=moon
+-- see: https//github.com/johnae/spook
 log_level "INFO"
+fs = require 'fs'
+execute = require('process').execute
+-- Adds the built-in terminal_notifier
+notify.add 'terminal_notifier'
+-- Add "notifier" in path if any, otherwise
+-- fail silently.
+pcall notify.add, 'notifier'
 
+{
+  :until_success
+  :command
+  :task_filter
+  :notifies
+} = require 'spookfile_helpers'
+
+test = (event, tasks) ->
+  until_success ->
+    notifies event.path, event, tasks
+
+task_list = task_filter fs.is_present
 rspec = command "bundle exec rspec -f d"
 
-watch "lib", "spec", ->
-  on_changed "^(spec)/(spec_helper%.rb)", -> rspec "spec"
-  on_changed "^spec/(.*)_spec%.rb", (a) -> rspec "spec/#{a}_spec.rb"
-  on_changed "^lib/sambal%.rb", (a) -> rspec "spec/sambal/client_spec.rb"
+watch '.', ->
 
-notifier "#{os.getenv('HOME')}/.spook/notifiers"
+  on_changed "^(spec)/(spec_helper%.rb)", (event) ->
+    test event, task_list(
+      rspec, "spec"
+    )
+
+  on_changed "^spec/(.*)_spec%.rb", (event, name) ->
+    test event, task_list(
+      rspec, "spec/#{name}_spec.rb"
+    )
+
+  on_changed "^lib/.*%.rb", (event) ->
+    test event, task_list(
+      rspec, "spec/sambal/client_spec.rb"
+    )
+
+  on_changed '^Spookfile$', ->
+    notify.info 'Re-executing spook...'
+    reload_spook!
