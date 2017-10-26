@@ -42,7 +42,6 @@ module Sambal
         res = @output.expect(/(.*\n)?smb:.*\\>/, @timeout)[0] rescue nil
         @connected = case res
         when nil
-          $stderr.puts "Failed to connect"
           false
         when /^put/
           res['putting'].nil? ? false : true
@@ -58,7 +57,7 @@ module Sambal
 
         unless @connected
           close if @pid
-          exit(1)
+          raise 'Failed to connect'
         end
       rescue => e
         raise RuntimeError, "Unknown Process Failed!! (#{$!.to_s}): #{e.message.inspect}\n"+e.backtrace.join("\n")
