@@ -34,6 +34,7 @@ module Sambal
         option_flags = "-W \"#{options[:domain]}\" -U \"#{options[:user]}\""
         option_flags = "#{option_flags} -I #{options[:ip_address]}" if options[:ip_address]
         option_flags = "#{option_flags} -p #{options[:port]} -s /dev/null"
+        option_flags = "#{option_flags} -t #{options[:timeout]}" if options[:timeout]
         password = options[:password] ? "'#{options[:password]}'" : "--no-pass"
         command = "COLUMNS=#{options[:columns]} smbclient \"//#{options[:host]}/#{options[:share]}\" #{password}"
 
@@ -120,6 +121,17 @@ module Sambal
       rescue InternalError => e
         Response.new(e.message, false)
       end
+    end
+
+    def rename(old_filename, new_filename)
+      response = ask_wrapped 'rename', [old_filename, new_filename]
+      if response =~ /^renaming\sfile.*$/ # "renaming" reponse only exist if has error
+        Response.new(response, false)
+      else
+        Response.new(response, true)
+      end
+    rescue InternalError => e
+      Response.new(e.message, false)
     end
 
     def put(file, destination)
