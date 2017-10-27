@@ -138,6 +138,7 @@ module Sambal
       File.open(t.path, 'w') do |f|
         f << content
       end
+      t.close
       response = ask_wrapped 'put', [t.path, destination]
       if response =~ /^putting\sfile.*$/
         Response.new(response, true)
@@ -146,8 +147,6 @@ module Sambal
       end
     rescue InternalError => e
       Response.new(e.message, false)
-    ensure
-      t.close
     end
 
     def mkdir(directory)
