@@ -124,7 +124,7 @@ module Sambal
 
     def rename(old_filename, new_filename)
       response = ask_wrapped 'rename', [old_filename, new_filename]
-      if response =~ /^renaming\sfile.*$/ # "renaming" reponse only exist if has error
+      if response =~ /renaming\sfile/ # "renaming" reponse only exist if has error
         Response.new(response, false)
       else
         Response.new(response, true)
