@@ -140,6 +140,13 @@ describe Sambal::Client do
     end
   end
 
+  describe 'rename' do
+    it 'is successful when renaming an existing file' do
+      expect(@sambal_client.rename(TESTFILE, 'renamed_file.txt')).to be_successful
+      expect(File.exists?(File.join(test_server.share_path, 'renamed_file.txt'))).to eq true
+    end
+  end
+
   it "should get files from an smb server" do
     expect(@sambal_client.get(TESTFILE, "/tmp/sambal_spec_testfile.txt")).to be_successful
     expect(File.exists?("/tmp/sambal_spec_testfile.txt")).to eq true
