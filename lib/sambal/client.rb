@@ -122,6 +122,17 @@ module Sambal
       end
     end
 
+    def rename(old_filename, new_filename)
+      response = ask_wrapped 'rename', [old_filename, new_filename]
+      if response =~ /renaming\sfile/ # "renaming" reponse only exist if has error
+        Response.new(response, false)
+      else
+        Response.new(response, true)
+      end
+    rescue InternalError => e
+      Response.new(e.message, false)
+    end
+
     def put(file, destination)
       response = ask_wrapped 'put', [file, destination]
       if response =~ /^putting\sfile.*$/
