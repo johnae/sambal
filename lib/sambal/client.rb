@@ -252,7 +252,7 @@ module Sambal
     end
 
     def ask(cmd)
-      @input.printf("#{cmd}\n")
+      @input.print("#{cmd}\n")
       response = @output.expect(/^smb:.*\\>/,@timeout)[0] rescue nil
       if response.nil?
         $stderr.puts "Failed to do #{cmd}"
