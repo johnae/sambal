@@ -27,13 +27,14 @@ On a mac this can be installed through homebrew https://github.com/mxcl/homebrew
 
     brew install samba
 
-On the Mac it can probably also be installed both through Fink and MacPorts.
-
 On Linux (Ubuntu) it's as easy as:
 
     apt-get install smbclient
 
 It should be available in a similar way on all major Linux distributions.
+
+If you happen to be running [NixOS](https://nixos.org/) or at least the [Nix package manager](https://nixos.org/nix/download.html) you could just
+use the `default.nix` file in this repo. That should also set you up for running the tests (which require samba).
 
 ## Usage
 
