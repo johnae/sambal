@@ -39,7 +39,7 @@ module Sambal
       @erb_path = "#{File.expand_path(File.dirname(__FILE__))}/smb.conf.erb"
       @host = "127.0.0.1" ## will always just be localhost
       @root_path = File.expand_path(File.dirname(File.dirname(File.dirname(__FILE__))))
-      @tmp_path = "#{root_path}/spec_tmp"
+      @tmp_path = ENV.key?('SAMBAL_TEMP_PATH') ? ENV['SAMBAL_TEMP_PATH'] : "#{root_path}/spec_tmp"
       @share_path = "#{tmp_path}/share"
       @share_name = share_name
       @config_path = "#{tmp_path}/smb.conf"
@@ -71,11 +71,11 @@ module Sambal
     def start
       if RUBY_PLATFORM=="java"
         @smb_server_pid = Thread.new do
-          `smbd -S -F -s #{@config_path} -p #{@port} --option="lockdir"=#{@lock_path} --option="pid directory"=#{@pid_dir} --option="private directory"=#{@private_dir} --option="cache directory"=#{@cache_dir} --option="state directory"=#{@state_dir} > #{@log_path}/smb.log`
+          `smbd -S -F -s #{@config_path} -p #{@port} --option="lockdir"=#{@lock_path} --option="pid directory"=#{@pid_dir} --option="private directory"=#{@private_dir} --option="cache directory"=#{@cache_dir} --option="state directory"=#{@state_dir} < /dev/null > #{@log_path}/smb.log`
         end
       else
         @smb_server_pid = fork do
-          `smbd -S -F -s #{@config_path} -p #{@port} --option="lockdir"=#{@lock_path} --option="pid directory"=#{@pid_dir} --option="private directory"=#{@private_dir} --option="cache directory"=#{@cache_dir} --option="state directory"=#{@state_dir} > #{@log_path}/smb.log`
+          exec "smbd -S -F -s #{@config_path} -p #{@port} --option=\"lockdir\"=#{@lock_path} --option=\"pid directory\"=#{@pid_dir} --option=\"private directory\"=#{@private_dir} --option=\"cache directory\"=#{@cache_dir} --option=\"state directory\"=#{@state_dir} < /dev/null > #{@log_path}/smb.log"
         end
       end
       sleep 2 ## takes a short time to start up

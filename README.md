@@ -1,4 +1,4 @@
-[![Circle CI](https://circleci.com/gh/johnae/sambal.svg?style=svg)](https://circleci.com/gh/johnae/sambal)
+[![Build Status](https://ci.insane.se/buildStatus/icon?job=sambal/master)](https://ci.insane.se/job/sambal/job/master/)
 
 # Sambal
 
