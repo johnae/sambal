@@ -266,9 +266,13 @@ module Sambal
       ask wrap_filenames(cmd,filenames)
     end
 
+    def sanitize_filename(filename)
+      filename.to_s.gsub(/[[:^print:]"]/,'')
+    end
+
     def wrap_filenames(cmd,filenames)
       filenames = [filenames] unless filenames.kind_of?(Array)
-      filenames.map!{ |filename| "\"#{filename}\"" }
+      filenames.map!{ |filename| "\"#{sanitize_filename(filename)}\"" }
       [cmd,filenames].flatten.join(' ')
     end
 
