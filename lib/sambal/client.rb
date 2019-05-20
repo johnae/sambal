@@ -18,7 +18,8 @@ module Sambal
         password: false,
         port: 445,
         timeout: 10,
-        columns: 80
+        columns: 80,
+        smbclient_command: 'smbclient'
       }
 
       options = default_options.merge(user_options)
@@ -39,7 +40,7 @@ module Sambal
           else
             '--no-pass'
           end
-        command = "COLUMNS=#{options[:columns]} smbclient \"//#{options[:host]}/#{options[:share]}\" #{password}"
+        command = "COLUMNS=#{options[:columns]} #{options[:smbclient_command]} \"//#{options[:host]}/#{options[:share]}\" #{password}"
 
         @output, @input, @pid = PTY.spawn("#{command} #{option_flags(options)}")
 
