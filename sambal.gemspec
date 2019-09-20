@@ -8,9 +8,8 @@ Gem::Specification.new do |gem|
   gem.summary       = %q{Ruby Samba Client}
   gem.homepage      = "https://github.com/johnae/sambal"
 
-  gem.files         = `git ls-files`.split($\)
-  gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
-  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
+  gem.files         = Dir.glob("{bin,lib}/**/*") + %w(LICENSE README.md)
+  gem.test_files    = Dir.glob("{spec}/**/*")
   gem.name          = "sambal"
   gem.require_paths = ["lib"]
   gem.version       = Sambal::VERSION
