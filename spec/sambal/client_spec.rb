@@ -257,4 +257,18 @@ describe Sambal::Client do
     expect(@sambal_client.wrap_filenames('cmd',[Pathname.new('file1'), Pathname.new('file2')])).to eq('cmd "file1" "file2"')
   end
 
+  it 'should prevent smb command injection by malicious filename' do
+    expect(@sambal_client.exists?('evil.txt')).to be_falsy
+    @sambal_client.ls("\b\b\b\bput \"#{file_to_upload.path}\" \"evil.txt")
+    expect(@sambal_client.exists?('evil.txt')).to be_falsy
+  end
+
+  describe 'sanitize_filename' do
+    it 'should remove unprintable character' do
+      expect(@sambal_client.sanitize_filename("fi\b\ble\n name\r\n")).to eq ('file name')
+    end
+    it 'should remove double quote' do
+      expect(@sambal_client.sanitize_filename('double"quote')).to eq ('doublequote')
+    end
+  end
 end
