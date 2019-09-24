@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'tempfile'
+require 'tmpdir'
 
 describe Sambal::Client do
 
@@ -269,6 +270,32 @@ describe Sambal::Client do
     end
     it 'should remove double quote' do
       expect(@sambal_client.sanitize_filename('double"quote')).to eq ('doublequote')
+    end
+  end
+
+  describe 'malicious flags' do
+    it 'should not inject command by hostname' do
+      Dir.mktmpdir do |dir|
+        begin
+          client = described_class.new(host: "\"; touch #{dir}/evil.txt;\"", share: test_server.share_name, port: test_server.port)
+        rescue
+        ensure
+          client.close if client
+        end
+        expect(File.exists?("#{dir}/evil.txt")).to be_falsy
+      end
+    end
+
+    it 'should not inject command by domain' do
+      Dir.mktmpdir do |dir|
+        begin
+          client = described_class.new(host: test_server.host, share: test_server.share_name, port: test_server.share_name, domain: "\"; touch #{dir}/evil.txt; ls \"")
+        rescue
+        ensure
+          client.close if client
+        end
+        expect(File.exists?("#{dir}/evil.txt")).to be_falsy
+      end
     end
   end
 end

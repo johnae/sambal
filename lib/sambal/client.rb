@@ -34,15 +34,15 @@ module Sambal
 
         password =
           if options[:authfile]
-            "--authentication-file #{options[:authfile]}"
+            ['--authentication-file', options[:authfile]]
           elsif options[:password]
-            options[:password]
+            [options[:password]]
           else
-            '--no-pass'
+            ['--no-pass']
           end
-        command = "COLUMNS=#{options[:columns]} #{options[:smbclient_command]} \"//#{options[:host]}/#{options[:share]}\" #{password}"
+        command = ['env', "COLUMNS=#{options[:columns]}", options[:smbclient_command], "//#{options[:host]}/#{options[:share]}", password, option_flags(options)].flatten
 
-        @output, @input, @pid = PTY.spawn("#{command} #{option_flags(options)}")
+        @output, @input, @pid = PTY.spawn(command[0], *command[1..-1])
 
         res = @output.expect(/(.*\n)?smb:.*\\>/, @timeout)[0] rescue nil
         @connected = case res
@@ -316,19 +316,19 @@ module Sambal
 
     def option_flags(options)
       flags = []
-      flags << "--workgroup \"#{options[:domain]}\"" if options[:domain] && !options[:authfile]
-      flags << "--user \"#{options[:user]}\"" if options[:user] && !options[:authfile]
-      flags << "--ip-address #{options[:ip_address]}" if options[:ip_address]
-      flags << "--send-buffer #{options[:buffer_size]}" if options[:buffer_size]
-      flags << "--debuglevel #{options[:debug_level]}" if options[:debug_level]
-      flags << '--encrypt' if options[:encrypt]
-      flags << "--max-protocol #{options[:max_protocol]}" if options[:max_protocol]
-      flags << '--use-ccache' if options[:use_ccache]
-      flags << "--socket-options #{options[:socket_options]}" if options[:socket_options]
-      flags << "--port #{options[:port]}" if options[:port]
-      flags << "--name-resolve #{options[:name_resolve]}" if options[:name_resolve]
-      flags << (options[:configfile] ? "--configfile #{options[:configfile]}" : '--configfile /dev/null')
-      flags.join(' ')
+      flags += ['--workgroup', options[:domain]] if options[:domain] && !options[:authfile]
+      flags += ['--user', options[:user]] if options[:user] && !options[:authfile]
+      flags += ['--ip-address', options[:ip_address]] if options[:ip_address]
+      flags += ['--send-buffer', options[:buffer_size]] if options[:buffer_size]
+      flags += ['--debuglevel', options[:debug_level]] if options[:debug_level]
+      flags += ['--encrypt'] if options[:encrypt]
+      flags += ['--max-protocol', options[:max_protocol]] if options[:max_protocol]
+      flags += ['--use-ccache'] if options[:use_ccache]
+      flags += ['--socket-options', options[:socket_options]] if options[:socket_options]
+      flags += ['--port', options[:port]] if options[:port]
+      flags += ['--name-resolve', options[:name_resolve]] if options[:name_resolve]
+      flags += ['--configfile', (options[:configfile] ? options[:configfile] : '/dev/null')]
+      flags.map(&:to_s)
     end
   end
 end
