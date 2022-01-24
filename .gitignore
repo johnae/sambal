@@ -17,3 +17,4 @@ spec/smb.conf
 test/tmp
 test/version_tmp
 tmp
+ruby
