@@ -1,0 +1,38 @@
+[devshell]
+name = "sambal"
+
+motd = """
+{bold}{106}Sambal{reset}
+
+Sambal is a ruby library for interacting with SMB servers.
+
+$(type -p menu &>/dev/null && menu)
+"""
+
+[[commands]]
+package = "ruby"
+help = "the ruby runtime"
+category = "devtools"
+
+#[[commands]]
+#package = "rubyPackages.rspec"
+#name = "rspec"
+#help = "the ruby spec runner"
+#category = "devtools"
+
+[[commands]]
+package = "rake"
+help = "the rake build tool"
+category = "devtools"
+
+[[commands]]
+package = "samba"
+name = "smbd"
+help = "the smb server"
+category = "devtools"
+
+[[commands]]
+package = "samba"
+name = "smbclient"
+help = "the smb client"
+category = "devtools"
