@@ -8,10 +8,13 @@ on:
     - master
 
 jobs:
-  test:
+  rspec:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: cachix/install-nix-action@v16
     - run: |
-        nix develop -c bundle exec rspec
+        nix develop -c bash<<SH
+          bundle install
+          bundle exec rspec
+        SH
