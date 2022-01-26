@@ -1,4 +1,4 @@
-[![Build Status](https://ci.insane.se/buildStatus/icon?job=sambal/master)](https://ci.insane.se/job/sambal/job/master/)
+![Test status](https://github.com/johnae/sambal/actions/workflows/ci.yaml/badge.svg)
 
 # Sambal
 
