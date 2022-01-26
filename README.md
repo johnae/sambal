@@ -34,7 +34,11 @@ On Linux (Ubuntu) it's as easy as:
 It should be available in a similar way on all major Linux distributions.
 
 If you happen to be running [NixOS](https://nixos.org/) or at least the [Nix package manager](https://nixos.org/nix/download.html) you could just
-use the `default.nix` file in this repo. That should also set you up for running the tests (which require samba).
+use the `flake.nix` file in this repo. That should also set you up for running the tests (which require samba). Something like this:
+
+    nix develop
+    bundle install
+    bundle exec rspec
 
 ## Usage
 
