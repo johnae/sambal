@@ -14,12 +14,6 @@ package = "ruby"
 help = "the ruby runtime"
 category = "devtools"
 
-#[[commands]]
-#package = "rubyPackages.rspec"
-#name = "rspec"
-#help = "the ruby spec runner"
-#category = "devtools"
-
 [[commands]]
 package = "rake"
 help = "the rake build tool"
