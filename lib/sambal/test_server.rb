@@ -71,11 +71,11 @@ module Sambal
     def start
       if RUBY_PLATFORM=="java"
         @smb_server_pid = Thread.new do
-          `smbd -S -F -s #{@config_path} -p #{@port} --option="lockdir"=#{@lock_path} --option="pid directory"=#{@pid_dir} --option="private directory"=#{@private_dir} --option="cache directory"=#{@cache_dir} --option="state directory"=#{@state_dir} < /dev/null > #{@log_path}/smb.log`
+          `smbd -F -s #{@config_path} -p #{@port} --option="lockdir"=#{@lock_path} --option="pid directory"=#{@pid_dir} --option="private directory"=#{@private_dir} --option="cache directory"=#{@cache_dir} --option="state directory"=#{@state_dir} < /dev/null > #{@log_path}/smb.log`
         end
       else
         @smb_server_pid = fork do
-          exec "smbd -S -F -s #{@config_path} -p #{@port} --option=\"lockdir\"=#{@lock_path} --option=\"pid directory\"=#{@pid_dir} --option=\"private directory\"=#{@private_dir} --option=\"cache directory\"=#{@cache_dir} --option=\"state directory\"=#{@state_dir} < /dev/null > #{@log_path}/smb.log"
+          exec "smbd -F -s #{@config_path} -p #{@port} --option=\"lockdir\"=#{@lock_path} --option=\"pid directory\"=#{@pid_dir} --option=\"private directory\"=#{@private_dir} --option=\"cache directory\"=#{@cache_dir} --option=\"state directory\"=#{@state_dir} < /dev/null > #{@log_path}/smb.log"
         end
       end
       sleep 2 ## takes a short time to start up
