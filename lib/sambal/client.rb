@@ -44,7 +44,7 @@ module Sambal
 
         @output, @input, @pid = PTY.spawn(command[0], *command[1..-1])
 
-        res = @output.expect(/(.*\n)?smb:.*\\>/, @timeout)[0] rescue nil
+        res = @output.expect(/smb:.*\\>/, @timeout)[0] rescue nil
         @connected = case res
         when nil
           false
@@ -116,7 +116,7 @@ module Sambal
       begin
         file_context(filename) do |file|
           response = ask_wrapped 'get', [file, output]
-          if response =~ /^getting\sfile.*$/
+          if response =~ /getting\sfile.*$/
             Response.new(response, true)
           else
             Response.new(response, false)
@@ -140,7 +140,7 @@ module Sambal
 
     def put(file, destination)
       response = ask_wrapped 'put', [file, destination]
-      if response =~ /^putting\sfile.*$/
+      if response =~ /putting\sfile.*$/
         Response.new(response, true)
       else
         Response.new(response, false)
@@ -155,7 +155,7 @@ module Sambal
         f << content
       end
       response = ask_wrapped 'put', [t.path, destination]
-      if response =~ /^putting\sfile.*$/
+      if response =~ /putting\sfile.*$/
         Response.new(response, true)
       else
         Response.new(response, false)
@@ -191,7 +191,7 @@ module Sambal
         cd '..'
         response = ask_wrapped 'rmdir', dir
         next_line = response.split("\n")[1]
-        if next_line =~ /^smb:.*\\>/
+        if next_line =~ /smb:.*\\>/
           Response.new(response, true)
         else
           Response.new(response, false)
@@ -206,7 +206,7 @@ module Sambal
         file_context(filename) do |file|
           response = ask_wrapped 'del', file
           next_line = response.split("\n")[1]
-          if next_line =~ /^smb:.*\\>/
+          if next_line =~ /smb:.*\\>/
           Response.new(response, true)
           #elsif next_line =~ /^NT_STATUS_NO_SUCH_FILE.*$/
           #  Response.new(response, false)
@@ -255,7 +255,7 @@ module Sambal
     def ask(cmd)
       @input.print("#{cmd}\n")
       response = begin
-                   @output.expect(/^smb:.*\\>/,@timeout)[0]
+                   @output.expect(/smb:.*\\>/,@timeout)[0]
                  rescue => e
                    $stderr.puts e
                    nil
