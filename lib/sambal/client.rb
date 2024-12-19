@@ -328,7 +328,7 @@ module Sambal
       flags += ['--port', options[:port]] if options[:port]
       flags += ['--name-resolve', options[:name_resolve]] if options[:name_resolve]
       flags += ['--configfile', (options[:configfile] ? options[:configfile] : '/dev/null')]
-      flags += ['--kerberos'] if options[:kerberos]
+      flags += ['--use-kerberos', options[:use_kerberos]] if options[:use_kerberos]
       flags.map(&:to_s)
     end
   end
