@@ -329,6 +329,7 @@ module Sambal
       flags += ['--name-resolve', options[:name_resolve]] if options[:name_resolve]
       flags += ['--configfile', (options[:configfile] ? options[:configfile] : '/dev/null')]
       flags += ['--use-kerberos', options[:use_kerberos]] if options[:use_kerberos]
+      flags += ['--timeout', options[:timeout]] if options[:timeout]
       flags.map(&:to_s)
     end
   end
